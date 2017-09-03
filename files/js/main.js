@@ -305,7 +305,7 @@ function getKeyByValue(object, value) {
 
 function createApp(){
   var appTemplate = `
-    <div class="col-xs-12 header"><div class="pad" style="height:100%" @click="visible = !visible"><i class="fa" :class="{'fa-caret-down': visible, 'fa-caret-right': !visible}" aria-hidden="true"></i></div><h3 class="col-xs-12">{{account.displayName}}</h3> <div class="btn pad" @click="destroy">X</div></div>
+    <div class="col-xs-12 header"><div class="pad clickable" style="height:100%" @click="visible = !visible"><i class="fa" :class="{'fa-caret-down': visible, 'fa-caret-right': !visible}" aria-hidden="true"></i></div><h3 class="col-xs-12">{{account.displayName}}</h3> <div class="btn pad" @click="destroy">X</div></div>
     <div :class="{'hidden':!visible}">
       <globalcenter v-if="loadingSomething">
         <div>{{loadingMessage}}</div>
