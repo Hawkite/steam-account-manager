@@ -63,9 +63,7 @@ button{
   margin-top:20px;
 }
 #main > div.container-fluid.row:not(:first-child){
-  padding-top:20px;
-  margin-top:20px;
-  border-top: solid 1px rgba(0,0,0,0.3);
+  padding-top: 10px;
 }
 .clickable{
   cursor:pointer;
