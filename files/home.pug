@@ -1,0 +1,28 @@
+doctype html
+html
+	head
+		meta(charset="utf-8")
+		title #{appname}
+		link(rel="stylesheet" href="./css/bootstrap/css/bootstrap.min.css")
+		link(rel="stylesheet" href="./css/bootstrap-autocolumns.css")
+		link(rel="stylesheet" href="./css/fa/css/font-awesome.min.css")
+		link(rel="stylesheet" href="./css/index.css")
+		script(src="./js/vue.js")
+	body
+		div.main#main
+			//-div#app.hunnit.container-fluid.row
+				h1.col-xs-12.text-center {{account.displayName}}
+				div(v-if="visible")
+					globalcenter(v-if="loadingSomething")
+						div {{loadingMessage}}
+					globalcenter(v-if="!loggedIn && !loadingSomething")
+						transition(name="fade")
+							div.alert.alert-danger(v-if="logInErrors.error")
+								strong Error: {{logInErrors.message}}
+						component( :is="currLogScreen")
+					div
+						home(v-if="loggedIn")
+			div#footer.col-xs-12.centerer
+				div(onclick="createApp()" class="").btn-round
+					div +
+			script(src="./js/main.js")

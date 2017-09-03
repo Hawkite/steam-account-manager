@@ -1,0 +1,16 @@
+{
+  "name": "steamtoolkit",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "electron-prebuilt": "^1.4.13",
+    "electron-pug": "^1.5.1",
+    "steam-user": "^3.21.7"
+  }
+}

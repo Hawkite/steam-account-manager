@@ -1,0 +1,48 @@
+doctype html
+html
+	head
+		meta(charset="utf-8")
+		title Hello
+		link(rel="stylesheet" href="./bootstrap/css/bootstrap.min.css")
+		link(rel="stylesheet" href="./i.css")
+	body
+		div(style="height:100%")
+			div.centerer.drag
+				h1
+					|#{appname}
+			div#main
+				div.logInForm.container.row
+					label.col-xs-12
+						span.col-xs-12.col-sm-6 Account Name
+						input(type="text" name="username").col-xs-12.col-sm-6
+					label.col-xs-12
+						span.col-xs-12.col-sm-6.col-lg-6 Password
+						input(type="password" name="password").col-xs-12.col-sm-6
+					div#loginbtn.btn.col-xs-12 Log In
+					
+				div.authForm.hidden.container
+					label.col-xs-12
+						span.col-xs-12.col-sm-6 Auth Code
+						input.col-xs-12.col-sm-6(type="input" name="authcode")
+					div#authBtn.btn.col-xs-12 Submit
+				div.emailForm.hidden.container
+					label.col-xs-12
+						span.col-xs-12.col-sm-6 Enter the code sent to your email
+						input.col-xs-12.col-sm-6(type="input" name="emailcode")
+					div#emailBtn.btn.col-xs-12 Submit
+				div#loadingScreen.hidden.centerer
+					div.col-xs-12#loadingStatus
+				div.main.hidden.container.row
+					div.col-xs-12
+						h2.col-xs-12
+							|User Info
+						div.col-xs-12
+							label
+								|
+
+
+		div.winbtns.centerer
+			div.btn _
+			div.btn &#x25A1;
+			div.btn.x x
+		script(src="i.js")
