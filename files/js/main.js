@@ -1,9 +1,7 @@
 var {ipcRenderer, remote} = require('electron');
 var ipc = ipcRenderer;
-
-
-
-
+//must be required in the front end or else
+var SteamUser = require('steam-user');
 
 var SteamID = {};
 SteamID.Universe = {
@@ -34,7 +32,7 @@ SteamID.Type = {
     "P2P_SUPER_SEEDER": 9,
     "ANON_USER": 10
 };
-var SteamUser = require('steam-user');
+
 
 Vue.component('globalcenter', {
   template: '<div class="centerer col-xs-12"><slot></slot></div>'
