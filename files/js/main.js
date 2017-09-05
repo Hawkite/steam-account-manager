@@ -108,7 +108,7 @@ var propertyWidget = Vue.component('propertywidget',{
 );
 
 
-var friendsList = Vue.component('friendsList',{
+var friendsList = Vue.component('friendslist',{
   template:`<div class="col-xs-12">
     <div v-for="(val,key) in list" class="col-xs-12">
       <strong>{{key}}</strong>
@@ -133,20 +133,15 @@ props:['currChat']
 var friendsWidget = Vue.component('friendsWidget',{
   template:`<div class="col-xs-12 basicHeight centerer">
     <chatbox :currChat="selectedFriend"></chatbox>
-    <friendsList class="col-xs-12" :selected.sync="selectedFriend" :list="friendsList"></friendsList>
+    <friendslist class="col-xs-12" :selected.sync="selectedFriend" :list="friendsList"></friendslist>
   </div>`
-,
-data:function(){
-  return {selectedFriend:"",friendsList: []}
-},
-created: function(){
-  this.$root.steamUserClient.on('friendsList',()=>{
-    this.$set(this,"friendsList",this.$root.steamUserClient.myFriends);
-    console.log("fl",this.$root.steamUserClient.myFriends,this.friendsList)
-  }).on('friendRelationship',()=>{
-    this.$set(this,"friendsList",this.$root.steamUserClient.myFriends);
-  })
-}
+  ,
+  data:function(){
+    return {selectedFriend:"",friendsList: this.$root.account.friends}
+  },
+  created: function(){
+
+  }
 });
 
 var appLi = Vue.component('appli',{
@@ -369,7 +364,7 @@ function createApp(){
   new Vue({
     el: appEl,
     data:{
-    account:{displayName:"(Not logged in)",props:{},appsOwned:[],packagesOwned:[]},
+    account:{friends:{},displayName:"(Not logged in)",props:{},appsOwned:[],packagesOwned:[]},
     loggedIn: false,
     currLogScreen: loginform,
     steamUserClient: null,
@@ -456,6 +451,10 @@ function createApp(){
         }).on(`error`,(err)=>{
           this.stopLoading();
           this.setError(err.message.replace(/([A-Z])/g, ' $1').trim());
+        }).on('friendsList',()=>{
+          this.setOtherProp(this.account.friends,this.$root.steamUserClient.myFriends);
+        }).on('friendRelationship',()=>{
+          this.setOtherProp(this.account.friends,this.$root.steamUserClient.myFriends);
         });
       },
       setError: function(msg){
