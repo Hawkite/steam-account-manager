@@ -116,7 +116,7 @@ var friendsList = Vue.component('friendslist',{
   </div>`,
   props:{
     "list":{
-      type: Array
+      type: Object
     }
   },
   methods:{
@@ -373,7 +373,7 @@ function createApp(){
   new Vue({
     el: appEl,
     data:{
-    account:{friends:[],displayName:"(Not logged in)",props:{},appsOwned:[],packagesOwned:[]},
+    account:{friends:{},displayName:"(Not logged in)",props:{},appsOwned:[],packagesOwned:[]},
     loggedIn: false,
     currLogScreen: loginform,
     steamUserClient: null,
