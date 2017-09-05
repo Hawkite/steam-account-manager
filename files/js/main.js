@@ -140,7 +140,7 @@ var friendsWidget = Vue.component('friendsWidget',{
     return {selectedFriend:"",friendsList: this.$root.account.friends}
   },
   created: function(){
-
+    
   }
 });
 
@@ -461,9 +461,9 @@ function createApp(){
           this.stopLoading();
           this.setError(err.message.replace(/([A-Z])/g, ' $1').trim());
         }).on('friendsList',()=>{
-          this.setOtherProp(this.account.friends,this.$root.steamUserClient.myFriends);
+          this.$set(this.account,"friends",this.$root.steamUserClient.myFriends);
         }).on('friendRelationship',()=>{
-          this.setOtherProp(this.account.friends,this.$root.steamUserClient.myFriends);
+          this.$set(this.account,"friends",this.$root.steamUserClient.myFriends);
         });
       },
       setError: function(msg){
