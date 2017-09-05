@@ -38,13 +38,6 @@ Vue.component('globalcenter', {
   template: '<div class="centerer col-xs-12"><slot></slot></div>'
 })
 
-Vue.component('infoboard',{
-  template: `<div><h4>{{key}}:{{value}}</h4></div>`,
-  data:function(){
-    return {key:"",value:""}
-  }
-})
-
 var emailCodeForm = Vue.component('emailCodeForm',{
   template: `<div class=""><h3>Email Verification...</h3><form v-on:submit.prevent="submit" class="row"><label class="col-xs-12">\
   <div class="col-xs-6">Email Code:</div><input class="col-xs-6" v-model="authCode"></input>\
@@ -98,7 +91,6 @@ var propertyWidget = Vue.component('propertywidget',{
   },
   methods:{
     prepareKey: function(key){
-      //(key.split(/(?=[A-Z])/).join(" ").charAt(0).toUpperCase()+(key.split(/(?=[A-Z])/).join(" ")).slice(1)
       key = key.split(/(?=[A-Z])/).join(" ")
       firstChar = key.charAt(0).toUpperCase();
       return firstChar + key.slice(1);
@@ -140,7 +132,7 @@ var friendsWidget = Vue.component('friendsWidget',{
     return {selectedFriend:"",friendsList: this.$root.account.friends}
   },
   created: function(){
-    
+
   }
 });
 
@@ -340,10 +332,6 @@ var loginform = Vue.component('loginform', {
     }
   }
 })
-
-
-
-
 
 function getKeyByValue(object, value) {
   return Object.keys(object).find(key => object[key] === value);
