@@ -264,7 +264,7 @@ padding: 5px;
   padding:0;
 }
 
-.appliContainer{
+.basicHeight{
   overflow-y: auto;
   height:50vh;
 }

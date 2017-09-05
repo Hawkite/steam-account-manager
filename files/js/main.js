@@ -108,6 +108,47 @@ var propertyWidget = Vue.component('propertywidget',{
 );
 
 
+var friendsList = Vue.component('friendsList',{
+  template:`<div class="col-xs-12">
+    <div v-for="(val,key) in list" class="col-xs-12">
+      <strong>{{key}}</strong>
+    </div>
+  </div>`,
+  props:{
+    "list":{
+      type: Array
+    }
+  },
+  methods:{
+
+  }
+});
+
+var chatbox = Vue.component('chatbox',{
+  template:`<div></div>`
+,
+props:['currChat']
+});
+
+var friendsWidget = Vue.component('friendsWidget',{
+  template:`<div class="col-xs-12 basicHeight centerer">
+    <chatbox :currChat="selectedFriend"></chatbox>
+    <friendsList class="col-xs-12" :selected.sync="selectedFriend" :list="friendsList"></friendsList>
+  </div>`
+,
+data:function(){
+  return {selectedFriend:"",friendsList: []}
+},
+created: function(){
+  this.$root.steamUserClient.on('friendsList',()=>{
+    this.$set(this,"friendsList",this.$root.steamUserClient.myFriends);
+    console.log("fl",this.$root.steamUserClient.myFriends,this.friendsList)
+  }).on('friendRelationship',()=>{
+    this.$set(this,"friendsList",this.$root.steamUserClient.myFriends);
+  })
+}
+});
+
 var appLi = Vue.component('appli',{
   template:`<div class="appli col-xs-12" :class="{hidden: !obj.visible}">
     <div class="col-xs-12">{{obj.appinfo.common.name}}</div>
@@ -173,7 +214,7 @@ var appsWidget = Vue.component('appsWidget',{
     </div>
   </div>
   <input class="col-xs-12" placeholder="Search..." v-model="filterText"></input>
-  <div class="appliContainer col-xs-12">
+  <div class="basicHeight col-xs-12">
     <appli v-for="(val,key) in this.cApps" @stopPlay="stopPlayingGame(key)" @startPlay="playGame(key)" :isChecked.sync="val.isChecked" :isPlaying="gamesPlayed.indexOf(parseInt(key)) > -1" :key="val.appinfo.common.name.replace(/[|&;$%@'<>()+, :-]/g,'')" :appid="key" :obj="val"></appli>
   </div>
   </div>`,
@@ -263,6 +304,7 @@ var homeComponent = Vue.component('home',{
   template:`<div>
     <widgetsection title="Properties" widget="propertywidget"></widgetsection>
     <widgetsection title="Apps" widget="appsWidget"></widgetsection>
+    <widgetsection title="Friends" widget="friendsWidget"></widgetsection>
   </div>`
 });
 
