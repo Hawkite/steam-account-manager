@@ -1,12 +1,12 @@
 {
-  "name": "steamtoolkit",
+  "name": "steam-account-manager",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "hawkite",
   "license": "MIT",
   "dependencies": {
     "electron": "^1.7.5",
