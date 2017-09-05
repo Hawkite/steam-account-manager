@@ -210,7 +210,7 @@ var appsWidget = Vue.component('appsWidget',{
   </div>
   <input class="col-xs-12" placeholder="Search..." v-model="filterText"></input>
   <div class="basicHeight col-xs-12">
-    <appli v-for="(val,key) in this.cApps" @stopPlay="stopPlayingGame(key)" @startPlay="playGame(key)" :isChecked.sync="val.isChecked" :isPlaying="gamesPlayed.indexOf(parseInt(key)) > -1" :key="val.appinfo.common.name.replace(/[|&;$%@'<>()+, :-]/g,'')" :appid="key" :obj="val"></appli>
+    <appli v-for="(val,key) in this.cApps" @stopPlay="stopPlayingGame(parseInt(key))" @startPlay="playGame(parseInt(key))" :isChecked.sync="val.isChecked" :isPlaying="gamesPlayed.indexOf(parseInt(key)) > -1" :key="val.appinfo.common.name.replace(/[|&;$%@'<>()+, :-]/g,'')" :appid="key" :obj="val"></appli>
   </div>
   </div>`,
   data:function(){
@@ -256,34 +256,43 @@ var appsWidget = Vue.component('appsWidget',{
         this.cApps[n].isChecked = false;
     },
     playAll: function(){
-      for(n in this.cApps)
-        this.playGame(n)
+      var tmp = Object.keys(this.cApps);
+      for(var i = 0; i < tmp.length; i++)
+        tmp[i] = parseInt(tmp[i]);
+      this.$root.steamUserClient.gamesPlayed(tmp,true);
+      this.$set(this,"gamesPlayed",tmp);
     },
     stopPlayingAll: function(){
-      for(n in this.cApps)
-        this.stopPlayingGame(n)
+      this.$root.steamUserClient.gamesPlayed([],true);
+      this.$set(this,"gamesPlayed",[]);
     },
     playAllSelected: function(){
-      var tmp = this.filter(this.cApps,x => x.isChecked)
-      for(n in tmp)
-        this.playGame(n)
+      var tmp = Object.keys(this.filter(this.cApps,x => x.isChecked));
+      for(var i = 0; i < tmp.length; i++)
+        tmp[i] = parseInt(tmp[i]);
+      this.$root.steamUserClient.gamesPlayed(tmp,true);
+      this.$set(this,"gamesPlayed",tmp);
     },
     stopPlayingAllSelected: function(){
-      var tmp = this.filter(this.cApps,x => x.isChecked)
-      for(n in tmp)
-        this.stopPlayingGame(n)
+      var tmp = Object.keys(this.filter(this.cApps,x => x.isChecked))
+      for(var i = 0; i < tmp.length; i++){
+        tmp[i] = parseInt(tmp[i]);
+        if(this.gamesPlayed.indexOf(tmp[i]) > -1)
+          this.gamesPlayed.splice(this.gamesPlayed.indexOf(tmp[i]),1);
+      }
+      this.$root.steamUserClient.gamesPlayed(this.gamesPlayed,true);
+      //for(n in tmp)
+      //  this.stopPlayingGame(n)
     },
     filter: (obj, predicate) =>
       Object.keys(obj)
           .filter( key => predicate(obj[key]) )
           .reduce( (res, key) => (res[key] = obj[key], res), {} ),
     playGame: function(id){
-      id = parseInt(id);
       this.gamesPlayed.indexOf(id) == -1?this.gamesPlayed.push(id):false;
       this.$root.steamUserClient.gamesPlayed(this.gamesPlayed,true);
     },
     stopPlayingGame: function(id){
-      id = parseInt(id);
       this.gamesPlayed.indexOf(id) > -1? this.gamesPlayed.splice(this.gamesPlayed.indexOf(id),1):false;
       this.$root.steamUserClient.gamesPlayed(this.gamesPlayed,true);
     }
@@ -364,7 +373,7 @@ function createApp(){
   new Vue({
     el: appEl,
     data:{
-    account:{friends:{},displayName:"(Not logged in)",props:{},appsOwned:[],packagesOwned:[]},
+    account:{friends:[],displayName:"(Not logged in)",props:{},appsOwned:[],packagesOwned:[]},
     loggedIn: false,
     currLogScreen: loginform,
     steamUserClient: null,
