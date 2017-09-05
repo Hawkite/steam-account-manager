@@ -9,7 +9,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "electron-prebuilt": "^1.4.13",
+    "electron": "^1.7.5",
     "electron-pug": "^1.5.1",
     "steam-user": "^3.21.7"
   }
