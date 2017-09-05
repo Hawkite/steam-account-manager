@@ -273,8 +273,6 @@ var appsWidget = Vue.component('appsWidget',{
           this.gamesPlayed.splice(this.gamesPlayed.indexOf(tmp[i]),1);
       }
       this.$root.steamUserClient.gamesPlayed(this.gamesPlayed,true);
-      //for(n in tmp)
-      //  this.stopPlayingGame(n)
     },
     filter: (obj, predicate) =>
       Object.keys(obj)
