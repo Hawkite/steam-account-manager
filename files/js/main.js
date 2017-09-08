@@ -101,7 +101,7 @@ var propertyWidget = Vue.component('propertywidget',{
 
 
 var friendsList = Vue.component('friendslist',{
-  template:`<div class="col-xs-12">
+  template:`<div>
     <div v-for="(val,key) in list" class="col-xs-12">
       <strong>{{key}}</strong>
     </div>
@@ -124,8 +124,8 @@ props:['currChat']
 
 var friendsWidget = Vue.component('friendsWidget',{
   template:`<div class="col-xs-12 basicHeight centerer" style="flex-direction:row">
-    <chatbox :currChat="selectedFriend"></chatbox>
-    <friendslist class="col-xs-12" :selected.sync="selectedFriend" :list="friendsList"></friendslist>
+    <chatbox class="col-xs-12" style="height:100%; overflow-y:auto" :currChat="selectedFriend"></chatbox>
+    <friendslist class="col-xs-12" style="max-height:100%; overflow-y:auto" :selected.sync="selectedFriend" :list="friendsList"></friendslist>
   </div>`
   ,
   data:function(){
