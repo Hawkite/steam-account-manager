@@ -3,6 +3,12 @@ var ipc = ipcRenderer;
 //must be required in the front end or else
 var SteamUser = require('steam-user');
 
+
+filterObject = (obj, predicate) =>
+  Object.keys(obj)
+      .filter( key => predicate(obj[key]) )
+      .reduce( (res, key) => (res[key] = obj[key], res), {} )
+
 var SteamID = {};
 SteamID.Universe = {
     "INVALID": 0,
@@ -32,6 +38,43 @@ SteamID.Type = {
     "P2P_SUPER_SEEDER": 9,
     "ANON_USER": 10
 };
+
+Vue.directive('infobox', {
+  inserted: function (el,binding) {
+    el.classList.add("pos-relative");
+    let tooltip = document.createElement("div");
+    tooltip.classList.add("v-tooltip");
+
+    if(binding.arg == "html")
+      tooltip.innerHTML = binding.value;
+    else
+      tooltip.innerText = binding.value;
+
+    if(!binding.modifiers["hov"]){
+      tooltip.style.pointerEvents = "none";
+      tooltip.style.userSelect = "none";
+    }
+
+    el.appendChild(tooltip);
+    el.addEventListener("mouseenter",function(){
+      tooltip.style.top = `${el.getBoundingClientRect().top-tooltip.offsetHeight}px`;
+      tooltip.style.left = `${(el.getBoundingClientRect().left + el.offsetWidth/2 - tooltip.offsetWidth/2) < 0?0:(el.getBoundingClientRect().left + el.offsetWidth/2 - tooltip.offsetWidth/2)}px`;
+      tooltip.classList.add("active");
+    })
+    el.addEventListener("mousemove",function(e){
+      /*tooltip.style.top = `${e.offsetY > el.offsetHeight/2?el.offsetHeight:-tooltip.offsetHeight}px`;
+      tooltip.style.left = `${(e.offsetX < el.offsetWidth*.1?-tooltip.offsetWidth + tooltip.offsetWidth/2:e.offsetX < el.offsetWidth*.9?e.offsetX:el.offsetWidth) - tooltip.offsetWidth/2}px`;*/
+    })
+    el.addEventListener("mouseleave",function(){
+      tooltip.classList.remove("active");
+    })
+  },
+  unbind:function(){
+    el.removeEventListener("onmouseenter",function(){
+
+    })
+  }
+})
 
 
 Vue.component('globalcenter', {
@@ -99,20 +142,66 @@ var propertyWidget = Vue.component('propertywidget',{
 }
 );
 
+var friendLi = Vue.component('friendli',{
+  template:`<div class="li" style="flex-direction:row;word-break: break-all;" v-infobox:html.hov="userid">
+    <img class="profico" :src="data.avatar_url_icon"/>
+    <div class="col-xs-12" style="padding:0">
+      <div class="col-xs-12">{{data.player_name}}</div>
+      <div v-if="data.game_name" class="col-xs-12 friends-game-text">Playing {{data.game_name}}</div>
+    </div>
+  </div>`,
+  props:{
+    "data":{
+      type: Object
+    },
+    "userid":{
+      type: String,
+      required: true
+    }
+  }
+});
+
 
 var friendsList = Vue.component('friendslist',{
   template:`<div>
-    <div v-for="(val,key) in list" class="col-xs-12">
-      <strong>{{key}}</strong>
-    </div>
-  </div>`,
+    <friendli v-for="(val,key) in inGameFriends" class="col-xs-12 game" :data='val' :userid='key' :key="key"></friendli>
+    <friendli v-for="(val,key) in onlineFriends" class="col-xs-12 online" :data='val' :userid='key' :key="key"></friendli>
+    <friendli v-for="(val,key) in offlineFriends" class="col-xs-12 offline" :data='val' :userid='key' :key="key"></friendli>
+    </div>`,
+  data: function(){
+    return {cFriends:{}};
+  },
+  computed:{
+    inGameFriends:function(){
+      return filterObject(this.cFriends,x=>x.gameid);
+    },
+    onlineFriends:function(){
+      return filterObject(this.cFriends,x=>(x.persona_state && !x.gameid));
+    },
+    offlineFriends:function(){
+      return filterObject(this.cFriends,x=>!x.persona_state);
+    }
+  },
   props:{
     "list":{
       type: Object
     }
   },
+  created:function(){
+    this.updateCFriends();
+  },
   methods:{
-
+    updateCFriends: function(){
+      this.$root.steamUserClient.getPersonas(Object.keys(this.list),(p)=>{
+        this.cFriends = {};
+        this.cFriends = p;
+      });
+    }
+  },
+  watch:{
+    list: function(){
+      this.updateCFriends();
+    }
   }
 });
 
@@ -137,7 +226,7 @@ var friendsWidget = Vue.component('friendsWidget',{
 });
 
 var appLi = Vue.component('appli',{
-  template:`<div class="appli col-xs-12" :class="{hidden: !obj.visible}">
+  template:`<div class="li col-xs-12" :class="{hidden: !obj.visible}">
     <div class="col-xs-12">{{obj.appinfo.common.name}}</div>
     <div class="col-xs-4 btn" :class="{'btn-danger': isPlaying}" @click="togPlay()" v-if="!isPlayedRemotely">{{isPlaying?"Stop Playing":"Play"}}</div>
     <div class="col-xs-auto-right"><input type="checkbox" v-model="checked"/></div>
@@ -337,7 +426,7 @@ function getKeyByValue(object, value) {
 
 function createApp(){
   var appTemplate = `
-    <div class="col-xs-12 header"><div class="pad clickable" style="height:100%" @click="visible = !visible"><i class="fa" :class="{'fa-minus-square-o': visible, 'fa-plus-square-o': !visible}" style="line-height: 0" aria-hidden="true"></i></div><h3 class="col-xs-12">{{account.displayName}}</h3> <div class="btn pad" @click="destroy">X</div></div>
+    <div class="col-xs-12 header"><div class="pad clickable" style="height:100%;line-height: 0em;width: 30px;text-align: center;" @click="visible = !visible"><i class="fa" :class="{'fa-caret-down': visible, 'fa-caret-right': !visible}" style="line-height: 0" aria-hidden="true"></i></div><h3 class="col-xs-12">{{account.displayName}}</h3> <div class="btn pad" @click="destroy">X</div></div>
     <div :class="{'hidden':!visible}">
       <globalcenter v-if="loadingSomething">
         <div>{{loadingMessage}}</div>
