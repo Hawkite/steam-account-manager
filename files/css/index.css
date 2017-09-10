@@ -313,3 +313,7 @@ padding: 5px;
    color: var(--persona-playing-game);
    font-family: roboto-thin;
 }
+
+.chatbox{
+  background: var(--secondary-bg-color);
+}

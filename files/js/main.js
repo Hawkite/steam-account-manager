@@ -143,11 +143,11 @@ var propertyWidget = Vue.component('propertywidget',{
 );
 
 var friendLi = Vue.component('friendli',{
-  template:`<div class="li" style="flex-direction:row;word-break: break-all;" v-infobox:html.hov="userid">
+  template:`<div class="li clickable" @click.prevent="clicked()" style="flex-direction:row;word-break: break-all;">
     <img class="profico" :src="data.avatar_url_icon"/>
     <div class="col-xs-12" style="padding:0">
       <div class="col-xs-12">{{data.player_name}}</div>
-      <div v-if="data.game_name" class="col-xs-12 friends-game-text">Playing {{data.game_name}}</div>
+      <div v-if="data.game_name || data.gameid" class="col-xs-12 friends-game-text">Playing {{data.game_name ||  ("(game id) " + data.gameid)}}</div>
     </div>
   </div>`,
   props:{
@@ -158,28 +158,30 @@ var friendLi = Vue.component('friendli',{
       type: String,
       required: true
     }
+  },
+  methods:{
+    clicked: function(){
+      this.$emit("friendClicked",this.userid,this.data);
+    }
   }
 });
 
 
 var friendsList = Vue.component('friendslist',{
   template:`<div>
-    <friendli v-for="(val,key) in inGameFriends" class="col-xs-12 game" :data='val' :userid='key' :key="key"></friendli>
-    <friendli v-for="(val,key) in onlineFriends" class="col-xs-12 online" :data='val' :userid='key' :key="key"></friendli>
-    <friendli v-for="(val,key) in offlineFriends" class="col-xs-12 offline" :data='val' :userid='key' :key="key"></friendli>
+    <friendli v-for="(val,key) in inGameFriends" class="col-xs-12 game" @friendClicked="sendClickEvent" :data='val' :userid='key' :key="key"></friendli>
+    <friendli v-for="(val,key) in onlineFriends" class="col-xs-12 online" @friendClicked="sendClickEvent" :data='val' :userid='key' :key="key"></friendli>
+    <friendli v-for="(val,key) in offlineFriends" class="col-xs-12 offline" @friendClicked="sendClickEvent" :data='val' :userid='key' :key="key"></friendli>
     </div>`,
-  data: function(){
-    return {cFriends:{}};
-  },
   computed:{
     inGameFriends:function(){
-      return filterObject(this.cFriends,x=>x.gameid);
+      return filterObject(this.list,x=>x.gameid);
     },
     onlineFriends:function(){
-      return filterObject(this.cFriends,x=>(x.persona_state && !x.gameid));
+      return filterObject(this.list,x=>(x.persona_state && !x.gameid));
     },
     offlineFriends:function(){
-      return filterObject(this.cFriends,x=>!x.persona_state);
+      return filterObject(this.list,x=>!x.persona_state);
     }
   },
   props:{
@@ -187,41 +189,54 @@ var friendsList = Vue.component('friendslist',{
       type: Object
     }
   },
-  created:function(){
-    this.updateCFriends();
-  },
   methods:{
-    updateCFriends: function(){
-      this.$root.steamUserClient.getPersonas(Object.keys(this.list),(p)=>{
-        this.cFriends = {};
-        this.cFriends = p;
-      });
-    }
-  },
-  watch:{
-    list: function(){
-      this.updateCFriends();
+    sendClickEvent: function(){
+      this.$emit("friendClicked",arguments);
     }
   }
 });
 
 var chatbox = Vue.component('chatbox',{
-  template:`<div></div>`
+  template:`<div class="chatbox">
+    <div class="col-xs-12" style="overflow-x:auto">
+      <span class="col-xs-4" v-for="id in openChats"></span>
+    </div>
+  </div>`
 ,
-props:['currChat']
+data:function(){
+  return {selectedChat:""}
+},
+props:['openChats']
 });
 
 var friendsWidget = Vue.component('friendsWidget',{
   template:`<div class="col-xs-12 basicHeight centerer" style="flex-direction:row">
-    <chatbox class="col-xs-12" style="height:100%; overflow-y:auto" :currChat="selectedFriend"></chatbox>
-    <friendslist class="col-xs-12" style="max-height:100%; overflow-y:auto" :selected.sync="selectedFriend" :list="friendsList"></friendslist>
+    <chatbox class="col-xs-12" style="height:100%; overflow-y:auto" :openChats.sync="openChats"></chatbox>
+    <friendslist class="col-xs-12" style="max-height:100%; overflow-y:auto" @friendClicked="startChat" :list="cFriends"></friendslist>
   </div>`
   ,
   data:function(){
-    return {selectedFriend:"",friendsList: this.$root.account.friends}
+    return {friendsList: this.$root.account.friends, openChats: [],cFriends: {}}
   },
   created: function(){
-
+    this.updateCFriends();
+  },
+  watch:{
+    friendsList: function(){
+      this.updateCFriends();
+    }
+  },
+  methods:{
+    updateCFriends: function(){
+        this.$root.steamUserClient.getPersonas(Object.keys(this.friendsList),(p)=>{
+          this.cFriends = {};
+          this.cFriends = p;
+        });
+      },
+    startChat:function(id){
+      console.log(id)
+      this.openChats.push(id);
+    }
   }
 });
 
