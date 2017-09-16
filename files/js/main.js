@@ -1,10 +1,12 @@
+'use strict';
 var {ipcRenderer, remote} = require('electron');
 var ipc = ipcRenderer;
 //must be required in the front end or else
 var SteamUser = require('steam-user');
 
+let accounts = remote.getGlobal("functions").loadAccounts();
 
-filterObject = (obj, predicate) =>
+var filterObject = (obj, predicate) =>
   Object.keys(obj)
       .filter( key => predicate(obj[key]) )
       .reduce( (res, key) => (res[key] = obj[key], res), {} )
@@ -135,7 +137,7 @@ var propertyWidget = Vue.component('propertywidget',{
   methods:{
     prepareKey: function(key){
       key = key.split(/(?=[A-Z])/).join(" ")
-      firstChar = key.charAt(0).toUpperCase();
+      let firstChar = key.charAt(0).toUpperCase();
       return firstChar + key.slice(1);
     }
   }
@@ -198,20 +200,20 @@ var friendsList = Vue.component('friendslist',{
 
 var chatbox = Vue.component('chatbox',{
   template:`<div class="chatbox">
-    <div class="col-xs-12" style="overflow-x:auto">
-      <span class="col-xs-4" v-for="id in openChats"></span>
+    <div class="col-xs-12 centerer" style="overflow-x: auto;flex-direction: row;justify-content: flex-start;">
+      <span class="pad" v-for="id in openChats">{{list[id].player_name}}</span>
     </div>
   </div>`
 ,
 data:function(){
   return {selectedChat:""}
 },
-props:['openChats']
+props:['openChats','list']
 });
 
 var friendsWidget = Vue.component('friendsWidget',{
   template:`<div class="col-xs-12 basicHeight centerer" style="flex-direction:row">
-    <chatbox class="col-xs-12" style="height:100%; overflow-y:auto" :openChats.sync="openChats"></chatbox>
+    <chatbox class="col-xs-12" style="height:100%; overflow-y:auto;" :list="cFriends" :openChats.sync="openChats"></chatbox>
     <friendslist class="col-xs-12" style="max-height:100%; overflow-y:auto" @friendClicked="startChat" :list="cFriends"></friendslist>
   </div>`
   ,
@@ -229,13 +231,12 @@ var friendsWidget = Vue.component('friendsWidget',{
   methods:{
     updateCFriends: function(){
         this.$root.steamUserClient.getPersonas(Object.keys(this.friendsList),(p)=>{
-          this.cFriends = {};
           this.cFriends = p;
         });
       },
     startChat:function(id){
-      console.log(id)
-      this.openChats.push(id);
+      console.log(id[0])
+      this.openChats.indexOf(id[0]) == -1? this.openChats.push(id[0]):false;
     }
   }
 });
@@ -278,7 +279,7 @@ var appLi = Vue.component('appli',{
   },
   methods:{
     togPlay: function(){
-      isPlaying = this.isPlaying;
+      let isPlaying = this.isPlaying;
       isPlaying?this.$emit('stopPlay'):this.$emit('startPlay');
     }
   }
@@ -317,10 +318,10 @@ var appsWidget = Vue.component('appsWidget',{
       //this.$set(this,"dispApps",this.filter(this.cApps,x => x.appinfo.common.name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"").indexOf(this.filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"")) > -1));
       var tmp1 = this.filter(this.cApps,x => x.appinfo.common.name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"").indexOf(this.filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"")) < 0);
       var tmp2 = this.filter(this.cApps,x => x.appinfo.common.name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"").indexOf(this.filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"")) > -1);
-      for(a in tmp1){
+      for(var a in tmp1){
         this.$set(this.cApps[a],"visible",false)
       }
-      for(a in tmp2){
+      for(var a in tmp2){
         this.$set(this.cApps[a],"visible",true)
       }
 
@@ -344,11 +345,11 @@ var appsWidget = Vue.component('appsWidget',{
   },
   methods:{
     selectAll: function(){
-      for(n in this.cApps)
+      for(var n in this.cApps)
         this.cApps[n].isChecked = true;
     },
     deselectAll: function(){
-      for(n in this.cApps)
+      for(var n in this.cApps)
         this.cApps[n].isChecked = false;
     },
     playAll: function(){
@@ -419,18 +420,19 @@ var loginform = Vue.component('loginform', {
   <input required v-model="password" type="password" class="col-xs-6">\
   </input>\
   </label>\
+  <label class="col-xs-6 col-xs-push-6"><input type="checkbox" v-model="remember" class="col-xs-auto-right" style="margin: 10px;height: 20px;"><div class="col-xs-auto-right">Remember Me</div></checkbox></label>
   <button type="submit" class="btn col-xs-12">Submit</button>\
   </form>\
   </div>`,
   data:function(){
-    return {accountName:'',password:''};
+    return {accountName:'',password:'',remember:true};
   },
   created: function(){
     this.accountName = this.$root.credentials.username;
   },
   methods:{
     startLogin: function(){
-      this.$root.login(this.accountName,this.password);
+      this.$root.login(this.accountName,this.password,this.remember);
     }
   }
 })
@@ -439,7 +441,14 @@ function getKeyByValue(object, value) {
   return Object.keys(object).find(key => object[key] === value);
 }
 
-function createApp(){
+function createApp(dataParam){
+  let dataUsrName = "",dataLoginKey = "";
+  if(dataParam){
+    if(dataParam.accountName && dataParam.loginKey){
+      dataUsrName = dataParam.accountName;
+      dataLoginKey = dataParam.loginKey;
+    }
+  }
   var appTemplate = `
     <div class="col-xs-12 header"><div class="pad clickable" style="height:100%;line-height: 0em;width: 30px;text-align: center;" @click="visible = !visible"><i class="fa" :class="{'fa-caret-down': visible, 'fa-caret-right': !visible}" style="line-height: 0" aria-hidden="true"></i></div><h3 class="col-xs-12">{{account.displayName}}</h3> <div class="btn pad" @click="destroy">X</div></div>
     <div :class="{'hidden':!visible}">
@@ -470,8 +479,9 @@ function createApp(){
     logInErrors:{error: false,message:"",timeout:null},
     loadingSomething: false,
     visible: true,
+    loginKey: dataLoginKey,
     loadingMessage: "",
-    credentials: {"accountName":"","password":"",authCode:null,twoFactorCode:null},
+    credentials: {"accountName":dataUsrName,"password":"",authCode:null,twoFactorCode:null,rememberPassword:true},
   },
     created: function(){
       this.init();
@@ -486,13 +496,15 @@ function createApp(){
         if(this.loggedIn){
           this.steamUserClient.logOff();
         }
+        ipc.send("removeprop",{accountName:this.credentials.accountName})
         this.$destroy();
       },
       init: function(){
 
         this.steamUserClient = new SteamUser({promptSteamGuardCode:false,enablePicsCache:true});
+
         this.steamUserClient.on(`loggedOn`,()=>{
-            this.steamUserClient.codeCallbackLogin = null;
+          this.steamUserClient.codeCallbackLogin = null;
           this.steamUserClient.setPersona(1);
           var tmpProps = {"vanityURL":this.steamUserClient.vanityURL,
           "steamID":{universe:getKeyByValue(SteamID.Universe,this.steamUserClient.steamID.universe)
@@ -509,7 +521,7 @@ function createApp(){
           //tmpProps.push({name:"Name",value:name},{name:"Country",value:country},{name:"Authorized Machines",value:authedMachines})
           this.account.displayName = name;
           var flagsStr = "";
-          for(key in SteamUser.EAccountFlags)
+          for(var key in SteamUser.EAccountFlags)
             if(!parseInt(key))
               if(SteamUser.EAccountFlags[key] & flags)
                 flagsStr += key + ", ";
@@ -554,7 +566,12 @@ function createApp(){
           this.$set(this.account,"friends",this.$root.steamUserClient.myFriends);
         }).on('friendRelationship',()=>{
           this.$set(this.account,"friends",this.$root.steamUserClient.myFriends);
+        }).on('loginKey',(key)=>{
+          ipc.send("addprops",{accountName:this.credentials.accountName,data:{"loginKey":key}});
         });
+        if(this.loginKey){
+          this.loginWithKey(this.loginKey);
+        }
       },
       setError: function(msg){
         clearTimeout(this.timeout);
@@ -566,16 +583,20 @@ function createApp(){
         this.logInErrors.error = false;
       },
       setProps: function(props){
-        for(prop in props)
+        for(var prop in props)
           this.$set(this.account.props,prop,props[prop]);
       },
       setOtherProp: function(obj,props){
-        for(prop in props)
+        for(var prop in props)
           this.$set(obj,prop,props[prop])
+      },
+      loginWithKey: function(key){
+        this.steamUserClient.logOn({accountName: this.credentials.accountName,loginKey:key,rememberPassword:true});
+        this.setLoading("Logging in...");
       },
       retryLogin: function(code){
         this.steamUserClient.codeCallbackLogin(code);
-
+        this.setLoading("Logging in...");
       },
       setLoading: function(msg){
         this.loadingSomething = true;
@@ -585,9 +606,11 @@ function createApp(){
         this.loadingSomething = false;
         this.loadingMessage = "";
       },
-      login: function(accountName,password){
+      login: function(accountName,password,remember){
         this.credentials.accountName = accountName;
         this.credentials.password = password;
+        this.credentials.rememberPassword = remember;
+        this.rememberMe = remember;
         this.setLoading("Logging in...");
         this.steamUserClient.logOn(this.credentials);
       }
@@ -595,5 +618,8 @@ function createApp(){
   });
 }
 
+
+for(var account in accounts)
+  createApp({accountName:account,loginKey:accounts[account].loginKey})
 //createApp();
 //var app = new Vue(appObj)
