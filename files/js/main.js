@@ -217,7 +217,6 @@ var chatbox = Vue.component('chatbox',{
       let ind = this.openChats.indexOf(id);
       tmpChats.splice(ind,1);
       if(ind > 0){
-        console.log(tmpChats[ind-1]);
         this.setChat(tmpChats[ind-1]);
       } else if(ind == 0) {
         this.setChat(tmpChats[ind])
