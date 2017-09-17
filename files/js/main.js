@@ -200,25 +200,48 @@ var friendsList = Vue.component('friendslist',{
 
 var chatbox = Vue.component('chatbox',{
   template:`<div class="chatbox">
-    <div class="col-xs-12 centerer" style="overflow-x: auto;flex-direction: row;justify-content: flex-start;">
-      <span class="pad" v-for="id in openChats">{{list[id].player_name}}</span>
+    <div class="col-xs-12 no-pad tab-holder">
+      <span @click="setChat(id)" class="tab" :class="{'btn':!(selectedChat == id)}" v-for="id in openChats">{{list[id].player_name}}  <i @click="removeId(id)" class="fa fa-close clickable"></i></span>
     </div>
-  </div>`
-,
-data:function(){
-  return {selectedChat:""}
-},
-props:['openChats','list']
+    <div>
+
+    </div>
+  </div>`,
+  props:['openChats','list','selectedChat'],
+  methods:{
+    setChat: function(id){
+      this.$emit('update:selectedChat', id)
+    },
+    removeId: function(id){
+      var tmpChats = JSON.parse(JSON.stringify(this.openChats));
+      let ind = this.openChats.indexOf(id);
+      tmpChats.splice(ind,1);
+      if(ind > 0){
+        console.log(tmpChats[ind-1]);
+        this.setChat(tmpChats[ind-1]);
+      } else if(ind == 0) {
+        this.setChat(tmpChats[ind])
+      }
+      this.$emit('update:openChats',tmpChats);
+    }
+  },
+  watch:{
+    selectedChat:function(){
+      //console.log(this.selectedChat)
+    },
+    openChats:function(){
+
+    }
+  }
 });
 
 var friendsWidget = Vue.component('friendsWidget',{
   template:`<div class="col-xs-12 basicHeight centerer" style="flex-direction:row">
-    <chatbox class="col-xs-12" style="height:100%; overflow-y:auto;" :list="cFriends" :openChats.sync="openChats"></chatbox>
+    <chatbox class="col-xs-12 no-pad" style="height:100%; overflow-y:auto;" :selectedChat.sync="selectedChat" :list="cFriends" :openChats.sync="openChats"></chatbox>
     <friendslist class="col-xs-12" style="max-height:100%; overflow-y:auto" @friendClicked="startChat" :list="cFriends"></friendslist>
-  </div>`
-  ,
+  </div>`,
   data:function(){
-    return {friendsList: this.$root.account.friends, openChats: [],cFriends: {}}
+    return {friendsList: this.$root.account.friends, openChats: [],cFriends: {},selectedChat:""}
   },
   created: function(){
     this.updateCFriends();
@@ -235,14 +258,14 @@ var friendsWidget = Vue.component('friendsWidget',{
         });
       },
     startChat:function(id){
-      console.log(id[0])
       this.openChats.indexOf(id[0]) == -1? this.openChats.push(id[0]):false;
+      this.selectedChat = id[0];
     }
   }
 });
 
 var appLi = Vue.component('appli',{
-  template:`<div class="li col-xs-12" :class="{hidden: !obj.visible}">
+  template:`<div class="li col-xs-12" v-show="obj.visible">
     <div class="col-xs-12">{{obj.appinfo.common.name}}</div>
     <div class="col-xs-4 btn" :class="{'btn-danger': isPlaying}" @click="togPlay()" v-if="!isPlayedRemotely">{{isPlaying?"Stop Playing":"Play"}}</div>
     <div class="col-xs-auto-right"><input type="checkbox" v-model="checked"/></div>
@@ -451,7 +474,7 @@ function createApp(dataParam){
   }
   var appTemplate = `
     <div class="col-xs-12 header"><div class="pad clickable" style="height:100%;line-height: 0em;width: 30px;text-align: center;" @click="visible = !visible"><i class="fa" :class="{'fa-caret-down': visible, 'fa-caret-right': !visible}" style="line-height: 0" aria-hidden="true"></i></div><h3 class="col-xs-12">{{account.displayName}}</h3> <div class="btn pad" @click="destroy">X</div></div>
-    <div :class="{'hidden':!visible}">
+    <div v-show="visible">
       <globalcenter v-if="loadingSomething">
         <div>{{loadingMessage}}</div>
       </globalcenter>
