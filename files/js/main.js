@@ -201,7 +201,7 @@ var friendsList = Vue.component('friendslist',{
 var chatbox = Vue.component('chatbox',{
   template:`<div class="chatbox">
     <div class="col-xs-12 no-pad tab-holder">
-      <span @click="setChat(id)" class="tab" :class="{'btn':!(selectedChat == id)}" v-for="id in openChats">{{list[id].player_name}}  <i @click="removeId(id)" class="fa fa-close clickable"></i></span>
+      <span @click.self="setChat(id)" class="tab" :class="{'btn':!(selectedChat == id)}" v-for="id in openChats">{{list[id].player_name}}  <i style="z-index: 10" @click="removeId(id)" class="fa fa-close clickable"></i></span>
     </div>
     <div>
 
@@ -210,23 +210,19 @@ var chatbox = Vue.component('chatbox',{
   props:['openChats','list','selectedChat'],
   methods:{
     setChat: function(id){
-      this.$emit('update:selectedChat', id)
+      if(this.openChats.indexOf(id) > -1)
+        this.$emit('update:selectedChat', id)
     },
     removeId: function(id){
       var tmpChats = JSON.parse(JSON.stringify(this.openChats));
-      let ind = this.openChats.indexOf(id);
+      let ind = tmpChats.indexOf(id);
       tmpChats.splice(ind,1);
-      if(ind > 0){
-        this.setChat(tmpChats[ind-1]);
-      } else if(ind == 0) {
-        this.setChat(tmpChats[ind])
-      }
       this.$emit('update:openChats',tmpChats);
     }
   },
   watch:{
     selectedChat:function(){
-      //console.log(this.selectedChat)
+      
     },
     openChats:function(){
 
@@ -248,6 +244,10 @@ var friendsWidget = Vue.component('friendsWidget',{
   watch:{
     friendsList: function(){
       this.updateCFriends();
+    },
+    openChats: function(){
+      if(this.openChats.indexOf(this.selectedChat) == -1)
+        this.selectedChat = this.openChats[this.openChats.length-1];
     }
   },
   methods:{
