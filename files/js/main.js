@@ -200,10 +200,10 @@ var friendsList = Vue.component('friendslist',{
 
 var chatbox = Vue.component('chatbox',{
   template:`<div class="chatbox">
-    <div class="col-xs-12 no-pad tab-holder">
+    <div class="col-xs-12 no-pad tab-holder" @mousewheel.prevent="scrollTabHolder">
       <span @click.self="setChat(id)" class="tab" :class="{'btn':!(selectedChat == id)}" v-for="id in openChats">{{list[id].player_name}}  <i style="z-index: 10" @click="removeId(id)" class="fa fa-close clickable"></i></span>
     </div>
-    <div>
+    <div class="chat-area">
 
     </div>
   </div>`,
@@ -218,11 +218,18 @@ var chatbox = Vue.component('chatbox',{
       let ind = tmpChats.indexOf(id);
       tmpChats.splice(ind,1);
       this.$emit('update:openChats',tmpChats);
+    },
+    scrollTabHolder: function(e){
+      console.log(e);
+      var el = e.srcElement;
+      if(!e.srcElement.classList.contains("tab-holder"))
+        while ((el = el.parentElement) && !el.classList.contains("tab-holder"));
+      el.scrollLeft += e.deltaY;
     }
   },
   watch:{
     selectedChat:function(){
-      
+
     },
     openChats:function(){
 
