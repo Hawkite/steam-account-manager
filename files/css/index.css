@@ -45,7 +45,7 @@ body{
 	font-weight: 100;
 	overflow-y: hidden;
 }
-input{
+input,textarea{
 	background-color: var(--input-bg-color);
 	color: var(--off-white-color);
 	border:none;
@@ -54,8 +54,11 @@ input{
 ::-webkit-input-placeholder {
   color: var(--off-white-color);
 }
-input:focus{
+input:focus,textarea:focus{
 	outline:none;
+}
+input[type=text]:focus,input[type=password]:focus,input[type=email]:focus{
+	box-shadow: 0 0 1px #fff;
 }
 button{
   all:unset;
@@ -173,11 +176,9 @@ label{
 .btn.x:hover{
 	color: red;
 }
-input[type=text]:focus,input[type=password]:focus,input[type=email]:focus{
-	box-shadow: 0 0 1px #fff;
-}
+
 .logInForm,.authForm,.emailForm,#loadingScreen{
-width: 50%;
+  width: 50%;
     height: 20%;
 	position: fixed;
 	top:0;
@@ -331,9 +332,9 @@ padding: 5px;
 .tab-holder{
   display: flex;
   overflow-x: auto;
+  overflow-y: hidden;
   flex-direction: row;
   justify-content: flex-start;
-  overflow-y: visible;
   margin-bottom:5px;
 }
 .tab-holder::-webkit-scrollbar{
@@ -346,4 +347,13 @@ padding: 5px;
   margin-right: 2px;
   border: solid 1px var(--li-bg-color);
   border-bottom-style: none;
+}
+.tab:not(.selected){
+  background-color: var(--btn-bg-color);
+}
+.tab:not(.selected):hover{
+  cursor:pointer;
+}
+.tab.selected{
+
 }
