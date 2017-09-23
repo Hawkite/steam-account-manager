@@ -220,7 +220,6 @@ var chatbox = Vue.component('chatbox',{
       this.$emit('update:openChats',tmpChats);
     },
     scrollTabHolder: function(e){
-      console.log(e);
       var el = e.srcElement;
       if(!e.srcElement.classList.contains("tab-holder"))
         while ((el = el.parentElement) && !el.classList.contains("tab-holder"));
