@@ -235,7 +235,6 @@ var chatbox = Vue.component('chatbox',{
   },
   methods:{
     setChat: function(id){
-      console.log(this.list);
       if(this.openChats.indexOf(id) > -1)
         this.$emit('update:selectedChat', id)
     },
@@ -273,11 +272,13 @@ var chatbox = Vue.component('chatbox',{
   watch:{
     selectedChat:function(){
       this.selectedUserChatHistory = {};
-      this.$root.steamUserClient.getChatHistory(this.selectedChat,(succ /*S U C C*/,msgs)=>{
-        this.$set(this,"selectedUserChatHistory",msgs);
-        this.scrollBottom();
-        //console.log(this.$root.steamUserClient.client.steamID);
-      });
+      if(selectedChat){
+        this.$root.steamUserClient.getChatHistory(this.selectedChat,(succ /*S U C C*/,msgs)=>{
+          this.$set(this,"selectedUserChatHistory",msgs);
+          this.scrollBottom();
+          //console.log(this.$root.steamUserClient.client.steamID);
+        });
+      }
     },
     openChats:function(){
 
