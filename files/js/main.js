@@ -204,7 +204,7 @@ var chatbox = Vue.component('chatbox',{
       <span @click.self="setChat(id)" class="tab" :class="{'selected':(selectedChat == id)}" v-for="id in openChats">{{list[id].player_name}}  <i style="z-index: 10" @click="removeId(id)" class="fa fa-close clickable"></i></span>
     </div>
     <div v-show="selectedChat" class="chat-area centerer">
-      <div class="col-xs-12 chat-area-history" ref="chathistory">
+      <div class="col-xs-12 chat-area-history" ref="chathistory" @scroll="checkScroll">
         <div class="chat-message" :class="{'chat-message-mine':message.steamID.accountid == myAccId}" v-for="(message,index) in selectedUserChatHistory">
           <div v-if="index == 0||(selectedUserChatHistory[index-1].steamID.accountid != message.steamID.accountid)" class="chat-message-name" >{{message.steamID.accountid == myAccId?myName:recipientName}}</div>
           <div class="chat-message-message">{{message.message}}</div>
@@ -215,12 +215,15 @@ var chatbox = Vue.component('chatbox',{
   </div>`,
   props:['openChats','list','selectedChat'],
   data: function(){
-    return {selectedUserChatHistory: {},myAccId: this.$root.steamUserClient.steamID.accountid,myName: this.$root.steamUserClient.accountInfo.name,currMessage:""};
+    return {selectedUserChatHistory: [],
+    myAccId: this.$root.steamUserClient.steamID.accountid,
+    myName: this.$root.steamUserClient.accountInfo.name,
+    currMessage:"",
+    userScrolled: false};
   },
-  created: function(){
-    this.$root.steamUserClient.on('',()=>{
+  mounted: function(){
 
-    }).on('friendMessage',(id,message)=>{
+    this.$root.steamUserClient.on('friendMessage',(id,message)=>{
       this.selectedUserChatHistory.push({steamID:id,message:message,timestamp:Date.now()});
       this.scrollBottom();
     }).on('friendTyping',(id)=>{
@@ -232,6 +235,7 @@ var chatbox = Vue.component('chatbox',{
   },
   methods:{
     setChat: function(id){
+      console.log(this.list);
       if(this.openChats.indexOf(id) > -1)
         this.$emit('update:selectedChat', id)
     },
@@ -254,7 +258,11 @@ var chatbox = Vue.component('chatbox',{
       this.scrollBottom();
     },
     scrollBottom: function(){
-      setTimeout(()=>{this.$refs.chathistory.scrollTop = this.$refs.chathistory.scrollHeight},100);
+      if(!this.userScrolled)
+        setTimeout(()=>{this.$refs.chathistory.scrollTop = this.$refs.chathistory.scrollHeight},100);
+    },
+    checkScroll: function(e){
+      this.userScrolled = this.$refs.chathistory.scrollHeight - this.$refs.chathistory.scrollTop === this.$refs.chathistory.clientHeight ? false:true;
     }
   },
   computed:{
