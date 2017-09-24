@@ -354,6 +354,27 @@ padding: 5px;
 .tab:not(.selected):hover{
   cursor:pointer;
 }
-.tab.selected{
-
+.chat-area-history{
+  flex-basis:80%;
+  overflow-y:auto;
+  padding-bottom:12px;
+}
+.chat-message-name{
+  font-size:.7em;
+  opacity:.7;
+  margin: 2em 0 1em 0;
+}
+.chat-message-message{
+  padding:10px;
+  background-color: rgba(0,0,0,.2);
+}
+.chat-message-mine .chat-message-message{
+  margin-left: 5em;
+  text-align: right;
+}
+.chat-message:not(.chat-message-mine) .chat-message-message{
+  margin-right: 5em;
+}
+.chat-message-mine .chat-message-name{
+  text-align: right;
 }

@@ -204,11 +204,32 @@ var chatbox = Vue.component('chatbox',{
       <span @click.self="setChat(id)" class="tab" :class="{'selected':(selectedChat == id)}" v-for="id in openChats">{{list[id].player_name}}  <i style="z-index: 10" @click="removeId(id)" class="fa fa-close clickable"></i></span>
     </div>
     <div v-show="selectedChat" class="chat-area centerer">
-      <div class="col-xs-12" style="flex-basis:80%"></div>
-      <div style="flex-basis:20%;" class="col-xs-12 no-pad"><textarea :disabled="!selectedChat" class="col-xs-12" style="height:100%;resize:none;padding:10px;"></textarea></div>
+      <div class="col-xs-12 chat-area-history" ref="chathistory">
+        <div class="chat-message" :class="{'chat-message-mine':message.steamID.accountid == myAccId}" v-for="(message,index) in selectedUserChatHistory">
+          <div v-if="index == 0||(selectedUserChatHistory[index-1].steamID.accountid != message.steamID.accountid)" class="chat-message-name" >{{message.steamID.accountid == myAccId?myName:recipientName}}</div>
+          <div class="chat-message-message">{{message.message}}</div>
+        </div>
+      </div>
+      <div style="flex-basis:20%;" class="col-xs-12 no-pad"><textarea v-model="currMessage" @keyup.enter="sendMessage()" :disabled="!selectedChat" class="col-xs-12" style="height:100%;resize:none;padding:10px;"></textarea></div>
     </div>
   </div>`,
   props:['openChats','list','selectedChat'],
+  data: function(){
+    return {selectedUserChatHistory: {},myAccId: this.$root.steamUserClient.steamID.accountid,myName: this.$root.steamUserClient.accountInfo.name,currMessage:""};
+  },
+  created: function(){
+    this.$root.steamUserClient.on('',()=>{
+
+    }).on('friendMessage',(id,message)=>{
+      this.selectedUserChatHistory.push({steamID:id,message:message,timestamp:Date.now()});
+      this.scrollBottom();
+    }).on('friendTyping',(id)=>{
+
+    }).on('friendMessageEcho',(id,message)=>{
+      this.selectedUserChatHistory.push({steamID:this.$root.steamUserClient.steamID,message:message,timestamp:Date.now()});
+      this.scrollBottom();
+    });
+  },
   methods:{
     setChat: function(id){
       if(this.openChats.indexOf(id) > -1)
@@ -225,11 +246,30 @@ var chatbox = Vue.component('chatbox',{
       if(!e.srcElement.classList.contains("tab-holder"))
         while ((el = el.parentElement) && !el.classList.contains("tab-holder"));
       el.scrollLeft += e.deltaY;
+    },
+    sendMessage: function(){
+      this.$root.steamUserClient.chatMessage(this.selectedChat,this.currMessage);
+      this.selectedUserChatHistory.push({steamID:this.$root.steamUserClient.steamID,message:this.currMessage,timestamp:Date.now()});
+      this.currMessage = "";
+      this.scrollBottom();
+    },
+    scrollBottom: function(){
+      setTimeout(()=>{this.$refs.chathistory.scrollTop = this.$refs.chathistory.scrollHeight},100);
+    }
+  },
+  computed:{
+    recipientName: function(){
+      return this.list[this.selectedChat].player_name;
     }
   },
   watch:{
     selectedChat:function(){
-      
+      this.selectedUserChatHistory = {};
+      this.$root.steamUserClient.getChatHistory(this.selectedChat,(succ /*S U C C*/,msgs)=>{
+        this.$set(this,"selectedUserChatHistory",msgs);
+        this.scrollBottom();
+        //console.log(this.$root.steamUserClient.client.steamID);
+      });
     },
     openChats:function(){
 
@@ -558,6 +598,7 @@ function createApp(dataParam){
           flagsStr = flagsStr.slice(0, -2);
           //{name:name,country:country,authedMachines:authedMachines,flags:flagsStr,facebookID:facebookID,facebookName:facebookName}
           setTimeout(()=>{this.setProps({"accountInfo":Object.assign({},this.steamUserClient.accountInfo,{flags:flagsStr})})},100);
+          this.$set(this.account.props.steamID,"id",this.steamUserClient.client.steamID);
 
         }).on(`emailInfo`,(address,validated)=>{
           setTimeout(()=>{this.setProps({"emailInfo":this.steamUserClient.emailInfo})},100);
