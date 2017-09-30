@@ -473,15 +473,18 @@ var appsWidget = Vue.component('appsWidget',{
 });
 
 var sectionComponent = Vue.component('widgetsection',{
-  template:`<section><h2 v-if="title" class="col-xs-12">{{title}}</h2><component :is='widget'></component></section>`,
-  props:['title','widget']
+  template:`<section><span class="clickable" @click.prevent="open = !open"><h2 v-if="title" class="col-xs-12"><i class="fa pad" :class="{'fa-caret-right':!open,'fa-caret-down':open}" ></i>{{title}}</h2></span><component v-show="open" :is='widget'></component></section>`,
+  props:['title','widget'],
+  data: function(){
+    return {open:false}
+  }
 });
 
 var homeComponent = Vue.component('home',{
   template:`<div>
     <widgetsection title="Properties" widget="propertywidget"></widgetsection>
     <widgetsection title="Apps" widget="appsWidget"></widgetsection>
-    <widgetsection title="Friends" widget="friendsWidget"></widgetsection>
+    <widgetsection title="Friends/Chat" widget="friendsWidget"></widgetsection>
   </div>`
 });
 
