@@ -171,11 +171,24 @@ var friendLi = Vue.component('friendli',{
 
 var friendsList = Vue.component('friendslist',{
   template:`<div>
-    <friendli v-for="(val,key) in inGameFriends" class="col-xs-12 game" @friendClicked="sendClickEvent" :data='val' :userid='key' :key="key"></friendli>
-    <friendli v-for="(val,key) in onlineFriends" class="col-xs-12 online" @friendClicked="sendClickEvent" :data='val' :userid='key' :key="key"></friendli>
-    <friendli v-for="(val,key) in offlineFriends" class="col-xs-12 offline" @friendClicked="sendClickEvent" :data='val' :userid='key' :key="key"></friendli>
+    <input v-model="filterText" class="col-xs-12" placeholder="Search..." style="position: sticky;top:0;z-index:20;"/>
+    <friendli v-for="(val,key) in filteredInGameFriends" class="col-xs-12 game" @friendClicked="sendClickEvent" :data='val' :userid='key' :key="key"></friendli>
+    <friendli v-for="(val,key) in filteredOnlineFriends" class="col-xs-12 online" @friendClicked="sendClickEvent" :data='val' :userid='key' :key="key"></friendli>
+    <friendli v-for="(val,key) in filteredOfflineFriends" class="col-xs-12 offline" @friendClicked="sendClickEvent" :data='val' :userid='key' :key="key"></friendli>
     </div>`,
+    data:function(){
+      return {filterText:""};
+    },
   computed:{
+    filteredInGameFriends: function(){
+      return filterObject(this.inGameFriends,x => x.player_name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"").indexOf(this.filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"")) > -1);
+    },
+    filteredOnlineFriends: function(){
+      return filterObject(this.onlineFriends,x => x.player_name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"").indexOf(this.filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"")) > -1);
+    },
+    filteredOfflineFriends: function(){
+      return filterObject(this.offlineFriends,x => x.player_name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"").indexOf(this.filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"")) > -1);
+    },
     inGameFriends:function(){
       return filterObject(this.list,x=>x.gameid);
     },
