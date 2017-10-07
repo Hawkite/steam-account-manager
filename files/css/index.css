@@ -20,6 +20,7 @@
   --persona-playing-game:#90ba3c;
   --persona-online:#57cbde;
   --persona-offline:gray;
+  --li-menu-bg-color: #222;
 }
 *{
 	box-sizing:border-box;
@@ -378,4 +379,21 @@ padding: 5px;
 }
 .chat-message-mine .chat-message-name{
   text-align: right;
+}
+.li-menu{
+  z-index: 25;
+  position:fixed;
+  background-color: var(--li-menu-bg-color);
+}
+.li-menu > div:hover{
+  background-color:var(--secondary-bg-color);/*rgba(255,255,255,.1);*/
+}
+.friendli-confirm{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  background-color: #111;
+  z-index: 25px;
 }

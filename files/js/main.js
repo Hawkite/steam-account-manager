@@ -145,13 +145,34 @@ var propertyWidget = Vue.component('propertywidget',{
 );
 
 var friendLi = Vue.component('friendli',{
-  template:`<div class="li clickable" @click.prevent="clicked()" style="flex-direction:row;word-break: break-all;">
+  template:`<div ref="parentLi" class="li clickable" @click.prevent="clicked()" @mouseleave="menuVisible = false" style="flex-direction:row;word-break: break-all;">
     <img class="profico" :src="data.avatar_url_icon"/>
     <div class="col-xs-12" style="padding:0">
       <div class="col-xs-12">{{data.player_name}}</div>
       <div v-if="data.game_name || data.gameid" class="col-xs-12 friends-game-text">Playing {{data.game_name ||  ("(game id) " + data.gameid)}}</div>
     </div>
+    <div>
+      <i class="fa fa-ellipsis-v pad" @click.stop.capture="toggleMenu" aria-hidden="true"></i>
+      <div v-if="menuVisible" class="li-menu" ref="childMenu" >
+        <div class="col-xs-12 clickable pad" @click.stop.capture="removeFriendPrompt">Remove Friend</div>
+      </div>
+    </div>
+    <div v-if="confirmNeeded" class="friendli-confirm text-center" @click.capture><div>{{confirmMessage}}</div><span class="btn col-xs-6" @click.stop.capture="confirmFunc(true)">Yes</span><span class="btn btn-danger col-xs-6" @click.stop.capture="confirmFunc(false)">No</span>
+    </div>
   </div>`,
+  data:function(){
+    return {menuVisible: false,confirmNeeded:false,confirmMessage:'',confirmFunc:function(){}};
+  },
+  updated: function(){
+      if(this.$refs.childMenu){
+        let prnt = this.$refs.parentLi;
+        let child = this.$refs.childMenu;
+        let bcr= prnt.getBoundingClientRect();
+        child.style.top = bcr.top - child.offsetHeight + 'px';
+        child.style.left = bcr.left + 'px';
+        child.style.right = Math.abs(window.innerWidth - (bcr.left + prnt.offsetWidth)) + 'px';
+      }
+  },
   props:{
     "data":{
       type: Object
@@ -162,6 +183,26 @@ var friendLi = Vue.component('friendli',{
     }
   },
   methods:{
+    removeFriendPrompt:function(){
+      this.confirmMessage = 'remove ' + this.data.player_name + '?';
+      this.confirmNeeded = true;
+      this.confirmFunc = this.removeFriend;
+      this.menuVisible = false;
+    },
+    removeFriend: function(ans){
+      if(ans){
+        this.$root.steamUserClient.removeFriend(this.userid);
+      }
+      this.resetConfirm();
+    },
+    resetConfirm: function(){
+      this.confirmMessage = '';
+      this.confirmFunc = ()=>{};
+      this.confirmNeeded = false;
+    },
+    toggleMenu:function(){
+      this.menuVisible = !this.menuVisible;
+    },
     clicked: function(){
       this.$emit("friendClicked",this.userid,this.data);
     }
@@ -170,7 +211,7 @@ var friendLi = Vue.component('friendli',{
 
 
 var friendsList = Vue.component('friendslist',{
-  template:`<div>
+  template:`<div class="friendsList">
     <input v-model="filterText" class="col-xs-12" placeholder="Search..." style="position: sticky;top:0;z-index:20;"/>
     <friendli v-for="(val,key) in filteredInGameFriends" class="col-xs-12 game" @friendClicked="sendClickEvent" :data='val' :userid='key' :key="key"></friendli>
     <friendli v-for="(val,key) in filteredOnlineFriends" class="col-xs-12 online" @friendClicked="sendClickEvent" :data='val' :userid='key' :key="key"></friendli>
@@ -302,7 +343,7 @@ var chatbox = Vue.component('chatbox',{
 var friendsWidget = Vue.component('friendsWidget',{
   template:`<div class="col-xs-12 basicHeight centerer" style="flex-direction:row">
     <chatbox class="col-xs-12 no-pad" style="height:100%; overflow-y:auto;" :selectedChat.sync="selectedChat" :list="cFriends" :openChats.sync="openChats"></chatbox>
-    <friendslist class="col-xs-12" style="max-height:100%; overflow-y:auto" @friendClicked="startChat" :list="cFriends"></friendslist>
+    <friendslist class="col-xs-12 basicHeight" style="overflow-y:auto" @friendClicked="startChat" :list="cFriends"></friendslist>
   </div>`,
   data:function(){
     return {friendsList: this.$root.account.friends, openChats: [],cFriends: {},selectedChat:""}
