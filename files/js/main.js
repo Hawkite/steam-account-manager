@@ -278,13 +278,17 @@ var chatbox = Vue.component('chatbox',{
   mounted: function(){
 
     this.$root.steamUserClient.on('friendMessage',(id,message)=>{
-      this.selectedUserChatHistory.push({steamID:id,message:message,timestamp:Date.now()});
-      this.scrollBottom();
-    }).on('friendTyping',(id)=>{
+      if(this.selectedChat == id.getSteamID64()){
+        this.selectedUserChatHistory.push({steamID:id,message:message,timestamp:Date.now()});
+        this.scrollBottom();
+      }
+    }).on('friendTyping'+this.selectedChat,(id)=>{
 
     }).on('friendMessageEcho',(id,message)=>{
-      this.selectedUserChatHistory.push({steamID:this.$root.steamUserClient.steamID,message:message,timestamp:Date.now()});
-      this.scrollBottom();
+      if(this.selectedChat == id.getSteamID64()){
+        this.selectedUserChatHistory.push({steamID:this.$root.steamUserClient.steamID,message:message,timestamp:Date.now()});
+        this.scrollBottom();
+      }
     });
   },
   methods:{
