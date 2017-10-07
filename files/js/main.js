@@ -157,7 +157,7 @@ var friendLi = Vue.component('friendli',{
         <div class="col-xs-12 clickable pad" @click.stop.capture="removeFriendPrompt">Remove Friend</div>
       </div>
     </div>
-    <div v-if="confirmNeeded" class="friendli-confirm text-center" @click.capture><div>{{confirmMessage}}</div><span class="btn col-xs-6" @click.stop.capture="confirmFunc(true)">Yes</span><span class="btn btn-danger col-xs-6" @click.stop.capture="confirmFunc(false)">No</span>
+    <div v-if="confirmNeeded" class="friendli-confirm text-center" @click.capture><div>{{confirmMessage}}</div><span class="btn btn-danger col-xs-6" @click.stop.capture="confirmFunc(true)">Yes</span><span class="btn col-xs-6" @click.stop.capture="confirmFunc(false)">No</span>
     </div>
   </div>`,
   data:function(){
