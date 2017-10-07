@@ -333,7 +333,7 @@ var friendsWidget = Vue.component('friendsWidget',{
 });
 
 var appLi = Vue.component('appli',{
-  template:`<div class="li col-xs-12" v-show="obj.visible">
+  template:`<div class="li col-xs-12" >
     <div class="col-xs-12">{{obj.appinfo.common.name}}</div>
     <div class="col-xs-4 btn" :class="{'btn-danger': isPlaying}" @click="togPlay()" v-if="!isPlayedRemotely">{{isPlaying?"Stop Playing":"Play"}}</div>
     <div class="col-xs-auto-right"><input type="checkbox" v-model="checked"/></div>
@@ -398,25 +398,29 @@ var appsWidget = Vue.component('appsWidget',{
   </div>
   <input class="col-xs-12" placeholder="Search..." v-model="filterText"></input>
   <div class="basicHeight col-xs-12">
-    <appli v-for="(val,key) in this.cApps" @stopPlay="stopPlayingGame(parseInt(key))" @startPlay="playGame(parseInt(key))" :isChecked.sync="val.isChecked" :isPlaying="gamesPlayed.indexOf(parseInt(key)) > -1" :key="val.appinfo.common.name.replace(/[|&;$%@'<>()+, :-]/g,'')" :appid="key" :obj="val"></appli>
+    <appli v-for="(val,key) in shownApps" @stopPlay="stopPlayingGame(parseInt(key))" @startPlay="playGame(parseInt(key))" :isChecked.sync="val.isChecked" :isPlaying="gamesPlayed.indexOf(parseInt(key)) > -1" :key="val.appinfo.common.name.replace(/[|&;$%@'<>()+, :-]/g,'')" :appid="key" :obj="val"></appli>
   </div>
   </div>`,
   data:function(){
     return {apps:this.$root.account.appsOwned,cApps:{},filterText:"",gamesPlayed:[]}
   },
+  computed:{
+    shownApps:function(){
+      return this.filter(this.cApps,x => x.appinfo.common.name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"").indexOf(this.filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"")) > -1);
+    }
+  },
   watch:{
-    filterText: function(){
+    // filterText: function(){
       //this.$set(this,"dispApps",this.filter(this.cApps,x => x.appinfo.common.name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"").indexOf(this.filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"")) > -1));
-      var tmp1 = this.filter(this.cApps,x => x.appinfo.common.name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"").indexOf(this.filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"")) < 0);
-      var tmp2 = this.filter(this.cApps,x => x.appinfo.common.name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"").indexOf(this.filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"")) > -1);
-      for(var a in tmp1){
-        this.$set(this.cApps[a],"visible",false)
-      }
-      for(var a in tmp2){
-        this.$set(this.cApps[a],"visible",true)
-      }
-
-    },
+      // var tmp1 = this.filter(this.cApps,x => x.appinfo.common.name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"").indexOf(this.filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"")) < 0);
+      // var tmp2 = this.filter(this.cApps,x => x.appinfo.common.name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"").indexOf(this.filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"")) > -1);
+      // for(var a in tmp1){
+      //   this.$set(this.cApps[a],"visible",false)
+      // }
+      // for(var a in tmp2){
+      //   this.$set(this.cApps[a],"visible",true)
+      // }
+    // },
     apps: function(){
       var owned = this.apps; //just incase it changes midway idk lol
       this.$root.steamUserClient.getProductInfo(owned,[],(apps)=>{
@@ -426,7 +430,7 @@ var appsWidget = Vue.component('appsWidget',{
             var type = apps[owned[i]].appinfo.common.type.toLowerCase();
             if(type == "game" || type == "tool" || type == "application"){
               apps[owned[i]].isChecked = false;
-              apps[owned[i]].visible = true;
+              //apps[owned[i]].visible = true;
               this.$set(this.cApps,owned[i],apps[owned[i]]);
             }
           }
