@@ -596,7 +596,7 @@ function createApp(dataParam){
     <div class="col-xs-12 header"><div class="pad clickable" style="height:100%;line-height: 0em;width: 30px;text-align: center;" @click="visible = !visible"><i class="fa" :class="{'fa-caret-down': visible, 'fa-caret-right': !visible}" style="line-height: 0" aria-hidden="true"></i></div><h3 class="col-xs-12">{{account.displayName}}</h3> <div class="btn pad" @click="destroy">X</div></div>
     <div v-show="visible">
       <globalcenter v-if="loadingSomething">
-        <div>{{loadingMessage}}</div>
+        <div class="basicHeight centerer"><i class="fa fa-2x fa-circle-o-notch fa-spin pad" aria-hidden="true"></i>{{loadingMessage}}</div>
       </globalcenter>
       <globalcenter v-if="!loggedIn && !loadingSomething">
         <transition name="fade">
