@@ -386,7 +386,8 @@ padding: 5px;
   background-color: var(--li-menu-bg-color);
 }
 .li-menu > div:hover{
-  background-color:var(--secondary-bg-color);/*rgba(255,255,255,.1);*/
+  color: var(--li-menu-bg-color);
+  background-color:var(--off-white-color);/*rgba(255,255,255,.1);*/
 }
 .friendli-confirm{
   position:absolute;

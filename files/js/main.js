@@ -145,7 +145,7 @@ var propertyWidget = Vue.component('propertywidget',{
 );
 
 var friendLi = Vue.component('friendli',{
-  template:`<div ref="parentLi" class="li clickable" @click.prevent="clicked()" @mouseleave="menuVisible = false" style="flex-direction:row;word-break: break-all;">
+  template:`<div ref="parentLi" class="li clickable col-xs-12" @click.prevent="clicked()" @mouseleave="menuVisible = false" style="flex-direction:row;word-break: break-all;">
     <img class="profico" :src="data.avatar_url_icon"/>
     <div class="col-xs-12" style="padding:0">
       <div class="col-xs-12">{{data.player_name}}</div>
@@ -154,7 +154,8 @@ var friendLi = Vue.component('friendli',{
     <div>
       <i class="fa fa-ellipsis-v pad" @click.stop.capture="toggleMenu" aria-hidden="true"></i>
       <div v-if="menuVisible" class="li-menu" ref="childMenu" >
-        <div class="col-xs-12 clickable pad" @click.stop.capture="removeFriendPrompt">Remove Friend</div>
+        <div class="col-xs-12 clickable pad" @click.stop.capture="addFriend" v-if="data.friendRelationship == 2">Accept Friend Request</div>
+        <div class="col-xs-12 clickable pad" @click.stop.capture="removeFriendPrompt">{{data.friendRelationship == 2 ? 'Ignore Friend Request': 'Remove Friend'}}</div>
       </div>
     </div>
     <div v-if="confirmNeeded" class="friendli-confirm text-center" @click.capture><div>{{confirmMessage}}</div><span class="btn btn-danger col-xs-6" @click.stop.capture="confirmFunc(true)">Yes</span><span class="btn col-xs-6" @click.stop.capture="confirmFunc(false)">No</span>
@@ -164,11 +165,12 @@ var friendLi = Vue.component('friendli',{
     return {menuVisible: false,confirmNeeded:false,confirmMessage:'',confirmFunc:function(){}};
   },
   updated: function(){
+
       if(this.$refs.childMenu){
         let prnt = this.$refs.parentLi;
         let child = this.$refs.childMenu;
         let bcr= prnt.getBoundingClientRect();
-        child.style.top = bcr.top - child.offsetHeight + 'px';
+        child.style.bottom = (window.innerHeight-bcr.bottom) + bcr.height+'px';
         child.style.left = bcr.left + 'px';
         child.style.right = Math.abs(window.innerWidth - (bcr.left + prnt.offsetWidth)) + 'px';
       }
@@ -188,6 +190,9 @@ var friendLi = Vue.component('friendli',{
       this.confirmNeeded = true;
       this.confirmFunc = this.removeFriend;
       this.menuVisible = false;
+    },
+    addFriend: function(){
+      this.$root.steamUserClient.addFriend(this.userid);
     },
     removeFriend: function(ans){
       if(ans){
@@ -213,9 +218,16 @@ var friendLi = Vue.component('friendli',{
 var friendsList = Vue.component('friendslist',{
   template:`<div class="friendsList">
     <input v-model="filterText" class="col-xs-12" placeholder="Search..." style="position: sticky;top:0;z-index:20;"/>
+    <div v-if="Object.keys(filteredInvitationsReceived).length" class="col-xs-12 pad">Invitations Received</div>
+    <friendli v-for="(val,key) in filteredInvitationsReceived" class="col-xs-12 game" @friendClicked="sendClickEvent" :data='val' :userid='key' :key="key"></friendli>
+    <div v-if="Object.keys(filteredInvitationsReceived).length" class="col-xs-12 pad">Friends</div>
     <friendli v-for="(val,key) in filteredInGameFriends" class="col-xs-12 game" @friendClicked="sendClickEvent" :data='val' :userid='key' :key="key"></friendli>
     <friendli v-for="(val,key) in filteredOnlineFriends" class="col-xs-12 online" @friendClicked="sendClickEvent" :data='val' :userid='key' :key="key"></friendli>
     <friendli v-for="(val,key) in filteredOfflineFriends" class="col-xs-12 offline" @friendClicked="sendClickEvent" :data='val' :userid='key' :key="key"></friendli>
+    <div v-if="Object.keys(filteredInvitationsSent).length" class="col-xs-12 pad">Invitations Sent</div>
+    <friendli v-for="(val,key) in filteredInvitationsSent" class="col-xs-12 offline" @friendClicked="sendClickEvent" :data='val' :userid='key' :key="key"></friendli>
+    <div v-if="Object.keys(filteredBlockedAndIgnored).length" class="col-xs-12 pad">Blocked & Ignored</div>
+    <friendli v-for="(val,key) in filteredBlockedAndIgnored" class="col-xs-12 offline" @friendClicked="sendClickEvent" :data='val' :userid='key' :key="key"></friendli>
     </div>`,
     data:function(){
       return {filterText:""};
@@ -230,14 +242,35 @@ var friendsList = Vue.component('friendslist',{
     filteredOfflineFriends: function(){
       return filterObject(this.offlineFriends,x => x.player_name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"").indexOf(this.filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"")) > -1);
     },
+    filteredBlockedAndIgnored: function(){
+      return filterObject(this.blockedAndIgnored,x => x.player_name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"").indexOf(this.filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"")) > -1);
+    },
+    filteredInvitationsSent: function(){
+      return filterObject(this.invitationsSent,x => x.player_name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"").indexOf(this.filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"")) > -1);
+    },
+    filteredInvitationsReceived: function(){
+      return filterObject(this.invitationsReceived,x => x.player_name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"").indexOf(this.filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"")) > -1);
+    },
     inGameFriends:function(){
-      return filterObject(this.list,x=>x.gameid);
+      return filterObject(this.friends,x=>x.gameid);
     },
     onlineFriends:function(){
-      return filterObject(this.list,x=>(x.persona_state && !x.gameid));
+      return filterObject(this.friends,x=>(x.persona_state && !x.gameid));
     },
     offlineFriends:function(){
-      return filterObject(this.list,x=>!x.persona_state);
+      return filterObject(this.friends,x=>!x.persona_state);
+    },
+    friends: function(){
+      return filterObject(this.list,x=>x.friendRelationship == SteamUser.EFriendRelationship.Friend);
+    },
+    blockedAndIgnored: function(){
+      return filterObject(this.list,x=>x.friendRelationship == SteamUser.EFriendRelationship.Blocked || x.friendRelationship == SteamUser.EFriendRelationship.Ignored || x.friendRelationship == SteamUser.EFriendRelationship.IgnoredFriend);
+    },
+    invitationsSent: function(){
+      return filterObject(this.list,x=>x.friendRelationship == SteamUser.EFriendRelationship.RequestInitiator);
+    },
+    invitationsReceived: function(){
+      return filterObject(this.list,x=>x.friendRelationship == SteamUser.EFriendRelationship.RequestRecipient);
     }
   },
   props:{
@@ -367,6 +400,9 @@ var friendsWidget = Vue.component('friendsWidget',{
   methods:{
     updateCFriends: function(){
         this.$root.steamUserClient.getPersonas(Object.keys(this.friendsList),(p)=>{
+          for(let key in this.friendsList){
+            p[key].friendRelationship = this.friendsList[key];
+          }
           this.cFriends = p;
         });
       },
@@ -707,9 +743,11 @@ function createApp(dataParam){
           this.stopLoading();
           this.setError(err.message.replace(/([A-Z])/g, ' $1').trim());
         }).on('friendsList',()=>{
-          this.$set(this.account,"friends",this.$root.steamUserClient.myFriends);
+          this.$set(this.account,"friends",JSON.parse(JSON.stringify(this.$root.steamUserClient.myFriends)));
         }).on('friendRelationship',()=>{
-          this.$set(this.account,"friends",this.$root.steamUserClient.myFriends);
+          console.log(this.account.friends);
+          this.$set(this.account,"friends",JSON.parse(JSON.stringify(this.$root.steamUserClient.myFriends)));
+          console.log(this.account.friends);
         }).on('loginKey',(key)=>{
           ipc.send("addprops",{accountName:this.credentials.accountName,data:{"loginKey":key}});
         });
