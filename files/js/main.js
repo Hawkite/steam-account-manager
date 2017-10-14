@@ -745,9 +745,7 @@ function createApp(dataParam){
         }).on('friendsList',()=>{
           this.$set(this.account,"friends",JSON.parse(JSON.stringify(this.$root.steamUserClient.myFriends)));
         }).on('friendRelationship',()=>{
-          console.log(this.account.friends);
           this.$set(this.account,"friends",JSON.parse(JSON.stringify(this.$root.steamUserClient.myFriends)));
-          console.log(this.account.friends);
         }).on('loginKey',(key)=>{
           ipc.send("addprops",{accountName:this.credentials.accountName,data:{"loginKey":key}});
         });
