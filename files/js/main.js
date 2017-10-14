@@ -385,11 +385,15 @@ var friendsWidget = Vue.component('friendsWidget',{
   data:function(){
     return {friendsList: this.$root.account.friends, openChats: [],cFriends: {},selectedChat:""}
   },
-  created: function(){
+  mounted: function(){
     this.updateCFriends();
+    setInterval(()=>{
+      this.$set(this,'friendsList',this.$root.account.friends);
+    },200);
   },
   watch:{
     friendsList: function(){
+      console.log("friends updated")
       this.updateCFriends();
     },
     openChats: function(){
@@ -743,9 +747,11 @@ function createApp(dataParam){
           this.stopLoading();
           this.setError(err.message.replace(/([A-Z])/g, ' $1').trim());
         }).on('friendsList',()=>{
-          this.$set(this.account,"friends",JSON.parse(JSON.stringify(this.$root.steamUserClient.myFriends)));
+          this.$set(this.account,"friends",JSON.parse(JSON.stringify(this.steamUserClient.myFriends)));
         }).on('friendRelationship',()=>{
-          this.$set(this.account,"friends",JSON.parse(JSON.stringify(this.$root.steamUserClient.myFriends)));
+          setTimeout(()=>{
+            this.$set(this.account,"friends",JSON.parse(JSON.stringify(this.steamUserClient.myFriends)));
+          },100);
         }).on('loginKey',(key)=>{
           ipc.send("addprops",{accountName:this.credentials.accountName,data:{"loginKey":key}});
         });
