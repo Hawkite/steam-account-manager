@@ -393,7 +393,6 @@ var friendsWidget = Vue.component('friendsWidget',{
   },
   watch:{
     friendsList: function(){
-      console.log("friends updated")
       this.updateCFriends();
     },
     openChats: function(){
