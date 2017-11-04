@@ -373,6 +373,7 @@ padding: 5px;
 .chat-message-mine .chat-message-message{
   margin-left: 5em;
   text-align: right;
+  white-space: pre;
 }
 .chat-message:not(.chat-message-mine) .chat-message-message{
   margin-right: 5em;
