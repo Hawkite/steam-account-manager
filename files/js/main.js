@@ -289,7 +289,7 @@ var chatbox = Vue.component('chatbox',{
           <div class="chat-message-message">{{message.message}}</div>
         </div>
       </div>
-      <div style="flex-basis:20%;" class="col-xs-12 no-pad"><textarea v-model="currMessage" @keyup.enter="sendMessage()" :disabled="!selectedChat" class="col-xs-12" style="height:100%;resize:none;padding:10px;"></textarea></div>
+      <div style="flex-basis:20%;" class="col-xs-12 no-pad"><textarea v-model="currMessage" @keyup.enter.exact="sendMessage()" :disabled="!selectedChat" class="col-xs-12" style="height:100%;resize:none;padding:10px;"></textarea></div>
     </div>
   </div>`,
   props:['openChats','list','selectedChat'],
