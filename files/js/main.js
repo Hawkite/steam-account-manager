@@ -158,11 +158,9 @@ var friendLi = Vue.component('friendli',{
         <div class="col-xs-12 clickable pad" @click.stop.capture="removeFriendPrompt">{{data.friendRelationship == 2 ? 'Ignore Friend Request': 'Remove Friend'}}</div>
       </div>
     </div>
-    <div v-if="confirmNeeded" class="friendli-confirm text-center" @click.capture><div>{{confirmMessage}}</div><span class="btn btn-danger col-xs-6" @click.stop.capture="confirmFunc(true)">Yes</span><span class="btn col-xs-6" @click.stop.capture="confirmFunc(false)">No</span>
-    </div>
   </div>`,
   data:function(){
-    return {menuVisible: false,confirmNeeded:false,confirmMessage:'',confirmFunc:function(){}};
+    return {menuVisible: false};
   },
   updated: function(){
 
@@ -186,24 +184,18 @@ var friendLi = Vue.component('friendli',{
   },
   methods:{
     removeFriendPrompt:function(){
-      this.confirmMessage = 'remove ' + this.data.player_name + '?';
-      this.confirmNeeded = true;
-      this.confirmFunc = this.removeFriend;
-      this.menuVisible = false;
+      let confirmMessage = 'Remove ' + this.data.player_name + ' from '+ this.$root.account.displayName + '?';
+      if(confirm(confirmMessage))
+        this.removeFriend();
+      // this.confirmNeeded = true;
+      // this.confirmFunc = this.removeFriend;
+      // this.menuVisible = false;
     },
     addFriend: function(){
       this.$root.steamUserClient.addFriend(this.userid);
     },
     removeFriend: function(ans){
-      if(ans){
-        this.$root.steamUserClient.removeFriend(this.userid);
-      }
-      this.resetConfirm();
-    },
-    resetConfirm: function(){
-      this.confirmMessage = '';
-      this.confirmFunc = ()=>{};
-      this.confirmNeeded = false;
+      this.$root.steamUserClient.removeFriend(this.userid);
     },
     toggleMenu:function(){
       this.menuVisible = !this.menuVisible;
