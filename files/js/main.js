@@ -713,8 +713,7 @@ function createApp(dataParam){
           setTimeout(()=>{this.setProps({"VAC":this.steamUserClient.vac})},100);
         }).on(`wallet`,()=>{
           setTimeout(()=>{
-            var currencyData = SteamUser.CurrencyData[this.steamUserClient.wallet.currency];
-            this.setProps({"wallet":Object.assign({},this.steamUserClient.wallet,{currency:null,balance: (currencyData.prepend?currencyData.prepend:"") + this.steamUserClient.wallet.balance + (currencyData.append?currencyData.append:"")})})
+            this.setProps({"wallet":Object.assign({},this.steamUserClient.wallet,{currency:null,balance: SteamUser.formatCurrency(this.steamUserClient.wallet.balance,this.steamUserClient.wallet.currency)})})
           },100);
         }).on(`licenses`,()=>{
           setTimeout(()=>{
