@@ -369,11 +369,11 @@ padding: 5px;
   padding:10px;
   background-color: rgba(0,0,0,.2);
   word-wrap: break-word;
+  white-space: pre;
 }
 .chat-message-mine .chat-message-message{
   margin-left: 5em;
   text-align: right;
-  white-space: pre;
 }
 .chat-message:not(.chat-message-mine) .chat-message-message{
   margin-right: 5em;
