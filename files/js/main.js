@@ -149,7 +149,7 @@ var friendLi = Vue.component('friendli',{
     <img class="profico" :src="data.avatar_url_icon"/>
     <div class="col-xs-12" style="padding:0">
       <div class="col-xs-12">{{data.player_name}}</div>
-      <div v-if="data.game_name || data.gameid" class="col-xs-12 friends-game-text">Playing {{data.game_name ||  ("(game id) " + data.gameid)}}</div>
+      <div v-if="data.game_name || data.gameid" class="col-xs-12 friends-game-text">Playing {{data.game_name ||  ("(id) " + data.gameid)}}</div>
     </div>
     <div>
       <i class="fa fa-ellipsis-v pad" @click.stop.capture="toggleMenu" aria-hidden="true"></i>
