@@ -149,7 +149,7 @@ var friendLi = Vue.component('friendli',{
     <img class="profico" :src="data.avatar_url_icon"/>
     <div class="col-xs-12" style="padding:0">
       <div class="col-xs-12">{{data.player_name}}</div>
-      <div v-if="data.game_name || data.gameid" class="col-xs-12 friends-game-text">Playing {{data.game_name ||  ("(id) " + data.gameid)}}</div>
+      <div v-if="data.game_name || data.gameid" class="col-xs-12 friends-game-text">Playing {{gameName}}</div>
     </div>
     <div>
       <i class="fa fa-ellipsis-v pad" @click.stop.capture="toggleMenu" aria-hidden="true"></i>
@@ -160,7 +160,10 @@ var friendLi = Vue.component('friendli',{
     </div>
   </div>`,
   data:function(){
-    return {menuVisible: false};
+    return {menuVisible: false,gameName: ""};
+  },
+  created: function(){
+    this.updateGameName();
   },
   updated: function(){
 
@@ -172,6 +175,7 @@ var friendLi = Vue.component('friendli',{
         child.style.left = bcr.left + 'px';
         child.style.right = Math.abs(window.innerWidth - (bcr.left + prnt.offsetWidth)) + 'px';
       }
+      //console.log(this.$root.steamUserClient.picsCache);
   },
   props:{
     "data":{
@@ -183,6 +187,26 @@ var friendLi = Vue.component('friendli',{
     }
   },
   methods:{
+    updateGameName: function(){
+      if(this.data.game_name || this.data.gameid){
+        let ret = this.data.game_name;
+        if(!ret){
+          try{
+            this.gameName = this.$root.steamUserClient.picsCache.apps[this.data.gameid].appinfo.common.name;
+
+          } catch(e) {
+            this.gameName = "(id) " + this.data.gameid;
+            //console.log(this.data.gameid);
+            //console.log(e);
+            this.$root.steamUserClient.getProductInfo([this.data.gameid], [], (apps)=>{
+              this.gameName = apps[this.data.gameid].appinfo.common.name;
+            });
+          }
+        } else {
+          this.gameName = ret;
+        }
+      }
+    },
     removeFriendPrompt:function(){
       let confirmMessage = 'Remove ' + this.data.player_name + ' from '+ this.$root.account.displayName + '?';
       if(confirm(confirmMessage))
