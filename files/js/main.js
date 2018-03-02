@@ -498,16 +498,11 @@ var appsWidget = Vue.component('appsWidget',{
   </div>
   <input class="col-xs-12" placeholder="Search..." style="margin-left: 9px" v-model="filterText"></input>
   <div class="basicHeight col-xs-12">
-    <appli v-for="(val,key) in shownApps" @stopPlay="stopPlayingGame(parseInt(key))" @startPlay="playGame(parseInt(key))" :isChecked.sync="val.isChecked" :isPlaying="gamesPlayed.indexOf(parseInt(key)) > -1" :key="val.appinfo.common.name.replace(/[|&;$%@'<>()+, :-]/g,'')" :appid="key" :obj="val"></appli>
+    <appli v-for="(val,key) in cApps" v-show="val.appinfo.common.name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,'').indexOf(filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,'')) > -1" @stopPlay="stopPlayingGame(parseInt(key))" @startPlay="playGame(parseInt(key))" :isChecked.sync="val.isChecked" :isPlaying="gamesPlayed.indexOf(parseInt(key)) > -1" :key="val.appinfo.common.name.replace(/[|&;$%@'<>()+, :-]/g,'')" :appid="key" :obj="val"></appli>
   </div>
   </div>`,
   data:function(){
     return {apps:this.$root.account.appsOwned,cApps:{},filterText:"",gamesPlayed:[]}
-  },
-  computed:{
-    shownApps:function(){
-      return this.filter(this.cApps,x => x.appinfo.common.name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"").indexOf(this.filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,"")) > -1);
-    }
   },
   watch:{
     // filterText: function(){
