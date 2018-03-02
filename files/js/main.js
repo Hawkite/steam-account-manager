@@ -486,23 +486,28 @@ var appsWidget = Vue.component('appsWidget',{
     </div>
   </div>
   <div class="col-xs-12">
-    <h4 class="col-xs-12">Selection</h4>
     <div class="col-xs-12">
-      <div class="col-xs-auto btn" @click="selectAll()">Select All</div>
-      <div class="col-xs-auto btn" @click="deselectAll()">Deselect All</div>
-    </div>
-    <div class="col-xs-12">
-      <div class="col-xs-auto btn" @click="playAllSelected()">Play All Selected</div>
+      <div class="col-xs-auto btn" @click="playAllSelected()">Play Selected</div>
       <div class="col-xs-auto btn" @click="stopPlayingAllSelected()">Stop Playing Selected</div>
     </div>
   </div>
   <input class="col-xs-12" placeholder="Search..." style="margin-left: 8px" v-model="filterText"></input>
+  <div class="col-xs-12" style="padding-right: 30px"><div class="col-xs-12 li" style="padding: 0px 10px">
+    <div class="col-xs-12">Name</div>
+    <div class="col-xs-4 text-center">Is Playing?</div>
+    <div class="col-xs-auto-right"><input type="checkbox" v-model="selAllCheckbox" @click="updateAllSelect()"/></div>
+  </div></div>
   <div class="basicHeight col-xs-12">
-    <appli v-for="(val,key) in cApps" v-show="val.appinfo.common.name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,'').indexOf(filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,'')) > -1" @stopPlay="stopPlayingGame(parseInt(key))" @startPlay="playGame(parseInt(key))" :isChecked.sync="val.isChecked" :isPlaying="gamesPlayed.indexOf(parseInt(key)) > -1" :key="val.appinfo.common.name.replace(/[|&;$%@'<>()+, :-]/g,'')" :appid="key" :obj="val"></appli>
+    <!--<appli v-for="(val,key) in cApps"  @stopPlay="stopPlayingGame(parseInt(key))" @startPlay="playGame(parseInt(key))" :isChecked="val.isChecked || selectAllChecked" :isPlaying="gamesPlayed.indexOf(parseInt(key)) > -1" :key="val.appinfo.common.name.replace(/[|&;$%@'<>()+, :-]/g,'')" :appid="key" :obj="val"></appli>-->
+    <div v-for="(val,key) in cApps" class="li col-xs-12" v-show="val.appinfo.common.name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,'').indexOf(filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,'')) > -1" >
+      <div class="col-xs-12">{{val.appinfo.common.name}}</div>
+      <div class="col-xs-4 btn" :class="{'btn-danger': (gamesPlayed.indexOf(parseInt(key)) > -1)}" @click="togPlay(key)">{{(gamesPlayed.indexOf(parseInt(key)) > -1)?"Stop Playing":"Play"}}</div>
+      <div class="col-xs-auto-right"><input type="checkbox" v-model="val.isChecked"/></div>
+    </div>
   </div>
   </div>`,
   data:function(){
-    return {apps:this.$root.account.appsOwned,cApps:{},filterText:"",gamesPlayed:[]}
+    return {apps:this.$root.account.appsOwned,cApps:{},filterText:"",gamesPlayed:[],selAllCheckbox:false}
   },
   watch:{
     // filterText: function(){
@@ -534,6 +539,21 @@ var appsWidget = Vue.component('appsWidget',{
     }
   },
   methods:{
+    updateAllSelect: function(){
+      if(this.selAllCheckbox){
+        this.selectAll();
+      } else {
+        this.deselectAll();
+      }
+    },
+    togPlay: function(key){
+      let id = parseInt(key);
+      if(this.gamesPlayed.indexOf(id) > -1){
+        this.stopPlayingGame(id);
+      } else {
+        this.playGame(id);
+      }
+    },
     selectAll: function(){
       for(var n in this.cApps)
         this.cApps[n].isChecked = true;
