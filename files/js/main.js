@@ -496,7 +496,7 @@ var appsWidget = Vue.component('appsWidget',{
       <div class="col-xs-auto btn" @click="stopPlayingAllSelected()">Stop Playing Selected</div>
     </div>
   </div>
-  <input class="col-xs-12" placeholder="Search..." style="margin-left: 9px" v-model="filterText"></input>
+  <input class="col-xs-12" placeholder="Search..." style="margin-left: 8px" v-model="filterText"></input>
   <div class="basicHeight col-xs-12">
     <appli v-for="(val,key) in cApps" v-show="val.appinfo.common.name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,'').indexOf(filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,'')) > -1" @stopPlay="stopPlayingGame(parseInt(key))" @startPlay="playGame(parseInt(key))" :isChecked.sync="val.isChecked" :isPlaying="gamesPlayed.indexOf(parseInt(key)) > -1" :key="val.appinfo.common.name.replace(/[|&;$%@'<>()+, :-]/g,'')" :appid="key" :obj="val"></appli>
   </div>
