@@ -85,7 +85,7 @@ Vue.component('globalcenter', {
 
 var emailCodeForm = Vue.component('emailCodeForm',{
   template: `<div class=""><h3>Email Verification...</h3><form v-on:submit.prevent="submit" class="row"><label class="col-xs-12">\
-  <div class="col-xs-6">Email Code:</div><input class="col-xs-6" v-model="authCode"></input>\
+  <div class="col-xs-6">Email Code:</div><input class="col-xs-6" v-model="twoFactorCode"></input>\
   </label><button class="col-xs-12" type="submit">Submit</button></form></div>`,
   data:function(){
     return {twoFactorCode: ""}
