@@ -491,6 +491,7 @@ var appsWidget = Vue.component('appsWidget',{
       <div class="col-xs-auto btn" @click="stopPlayingAllSelected()">Stop Playing Selected</div>
     </div>
   </div>
+  <div class="col-xs-12" style="padding-top:15px">Save checkmarks? <input type="checkbox" v-model="saveCheckboxes"></div>
   <input class="col-xs-12" placeholder="Search..." style="margin-left: 8px" v-model="filterText"></input>
   <div class="col-xs-12" style="padding-right: 30px"><div class="col-xs-12 li" style="padding: 0px 10px">
     <div class="col-xs-12">Name</div>
@@ -502,12 +503,12 @@ var appsWidget = Vue.component('appsWidget',{
     <div v-for="(val,key) in cApps" class="li col-xs-12" v-show="val.appinfo.common.name.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,'').indexOf(filterText.toLowerCase().replace(/[|&;$%@'<>()+, :-]/g,'')) > -1" >
       <div class="col-xs-12">{{val.appinfo.common.name}}</div>
       <div class="col-xs-4 btn" :class="{'btn-danger': (gamesPlayed.indexOf(parseInt(key)) > -1)}" @click="togPlay(key)">{{(gamesPlayed.indexOf(parseInt(key)) > -1)?"Stop Playing":"Play"}}</div>
-      <div class="col-xs-auto-right"><input type="checkbox" v-model="val.isChecked"/></div>
+      <div class="col-xs-auto-right"><input type="checkbox" v-model="val.isChecked" @click="updateSavedCheckboxes(key)"/></div>
     </div>
   </div>
   </div>`,
   data:function(){
-    return {apps:this.$root.account.appsOwned,cApps:{},filterText:"",gamesPlayed:[],selAllCheckbox:false}
+    return {apps:this.$root.account.appsOwned,cApps:{},filterText:"",gamesPlayed:[],selAllCheckbox:false,saveCheckboxes:this.$root.savedCheckboxes.length > 0, checkedApps: this.$root.savedCheckboxes}
   },
   watch:{
     // filterText: function(){
@@ -521,7 +522,19 @@ var appsWidget = Vue.component('appsWidget',{
       //   this.$set(this.cApps[a],"visible",true)
       // }
     // },
+    saveCheckboxes: function(chk){
+      if(chk){
+        var tmp = Object.keys(this.filter(this.cApps,x => x.isChecked));
+        ipc.send("addprops",{accountName:this.$root.credentials.accountName,data:{"savedCheckboxes":tmp}});
+      } else {
+        ipc.send("addprops",{accountName:this.$root.credentials.accountName,data:{"savedCheckboxes":[]}});
+      }
+    },
     apps: function(){
+      var tmpCheckedApps = {}; //temporary storage with values set as keys to make seeing if it's checked faster
+      for(var key in this.checkedApps){
+        tmpCheckedApps[this.checkedApps[key]] = key;
+      }
       var owned = this.apps; //just incase it changes midway idk lol
       this.$root.steamUserClient.getProductInfo(owned,[],(apps)=>{
         this.$set(this,"cApps",{});
@@ -530,6 +543,9 @@ var appsWidget = Vue.component('appsWidget',{
             var type = apps[owned[i]].appinfo.common.type.toLowerCase();
             if(type == "game" || type == "tool" || type == "application"){
               apps[owned[i]].isChecked = false;
+              if(tmpCheckedApps && Object.keys(tmpCheckedApps).length > 0 && tmpCheckedApps[owned[i]] !== undefined){
+                apps[owned[i]].isChecked = true;
+              }
               //apps[owned[i]].visible = true;
               this.$set(this.cApps,owned[i],apps[owned[i]]);
             }
@@ -539,6 +555,12 @@ var appsWidget = Vue.component('appsWidget',{
     }
   },
   methods:{
+    updateSavedCheckboxes: function(app){
+      if(this.saveCheckboxes){
+        var tmp = Object.keys(this.filter(this.cApps,x => x.isChecked));
+        ipc.send("addprops",{accountName:this.$root.credentials.accountName,data:{"savedCheckboxes":tmp}});
+      }
+    },
     updateAllSelect: function(){
       if(this.selAllCheckbox){
         this.selectAll();
@@ -655,12 +677,14 @@ function getKeyByValue(object, value) {
 }
 
 function createApp(dataParam){
-  let dataUsrName = "",dataLoginKey = "";
+  let dataUsrName = "",dataLoginKey = "",dataSavedCheckboxes = [];
   if(dataParam){
     if(dataParam.accountName && dataParam.loginKey){
       dataUsrName = dataParam.accountName;
       dataLoginKey = dataParam.loginKey;
     }
+    if(dataParam.savedCheckboxes)
+      dataSavedCheckboxes = dataParam.savedCheckboxes;
   }
   var appTemplate = `
     <div class="col-xs-12 header"><div class="pad clickable" style="height:100%;line-height: 0em;width: 30px;text-align: center;" @click="visible = !visible"><i class="fa" :class="{'fa-caret-down': visible, 'fa-caret-right': !visible}" style="line-height: 0" aria-hidden="true"></i></div><h3 class="col-xs-12">{{account.displayName}}</h3> <div class="btn pad" @click="destroy">X</div></div>
@@ -694,6 +718,7 @@ function createApp(dataParam){
     visible: true,
     loginKey: dataLoginKey,
     loadingMessage: "",
+    savedCheckboxes: dataSavedCheckboxes,
     credentials: {"accountName":dataUsrName,"password":"",authCode:null,twoFactorCode:null,rememberPassword:true},
   },
     created: function(){
@@ -835,6 +860,6 @@ function createApp(dataParam){
 
 
 for(var account in accounts)
-  createApp({accountName:account,loginKey:accounts[account].loginKey})
+  createApp({accountName:account,loginKey:accounts[account].loginKey,savedCheckboxes:accounts[account].savedCheckboxes})
 //createApp();
 //var app = new Vue(appObj)
